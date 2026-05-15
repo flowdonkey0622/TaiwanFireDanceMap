@@ -218,6 +218,16 @@ export const fireDanceEvents: FireDanceEvent[] = [
     summary: "臺大臺科師大火舞社 Fire Dance Club 2026 上半年成果發表會。IG：@ntu_ntust_ntnu_fd",
     link: "https://www.instagram.com/ntu_ntust_ntnu_fd/",
   },
+  {
+    id: "ntu-ntust-ntnu-fd-2026-recital",
+    county: "桃園市",
+    title: "長庚大學光火藝術社成果發表會",
+    date: "2026-05-26",
+    venue: "長庚大學",
+    type: "performance",
+    summary: "長庚大學光火藝術社 2026 上半年成果發表會。IG：@cgu_light_fire",
+    link: "https://www.instagram.com/cgu_light_fire/",
+  },
 ];
 
 export function getEventsByCounty(countyName: string): FireDanceEvent[] {
