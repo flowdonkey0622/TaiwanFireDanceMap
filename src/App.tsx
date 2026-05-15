@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { logoUrl } from "./assets";
 import { CalendarView } from "./components/CalendarView";
 import { CountyPopup } from "./components/CountyPopup";
 import { TaiwanMap } from "./components/TaiwanMap";
@@ -26,7 +27,7 @@ function App() {
         <div className="intro">
           <div className="site-brand">
             <img
-              src="/flow-donkey-logo-circle.png"
+              src={logoUrl}
               alt="Fire & Flow Donkey"
             />
             <div>

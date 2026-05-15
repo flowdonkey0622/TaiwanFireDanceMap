@@ -208,6 +208,7 @@ h1 {
   cursor: pointer;
   filter: url("#county-lift");
   outline: none;
+  pointer-events: all;
   transform-box: fill-box;
   transform-origin: center;
   transition:
@@ -229,7 +230,7 @@ h1 {
   fill: url("#county-active-fill");
   stroke: #672313;
   stroke-width: 2;
-  transform: translate(-2px, -5px);
+  transform: none;
 }
 
 .county.is-selected {

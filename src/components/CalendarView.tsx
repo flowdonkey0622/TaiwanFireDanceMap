@@ -1,4 +1,5 @@
 import { calendarEvents, type CalendarEvent } from "../data/calendarEvents";
+import { logoUrl } from "../assets";
 
 type CalendarDay = {
   date: Date;
@@ -82,7 +83,7 @@ export function CalendarView() {
               <header className="calendar-board__header">
                 <img
                   className="brand-mark"
-                  src="/flow-donkey-logo-circle.png"
+                  src={logoUrl}
                   alt=""
                   aria-hidden="true"
                 />
