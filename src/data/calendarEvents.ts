@@ -13,6 +13,7 @@ export const calendarEvents: CalendarEvent[] = [
   { id: "nycu-fire", title: "交大火舞", date: "2026-05-23", tone: "blue" },
   { id: "nthu-flow", title: "清大光舞", date: "2026-05-24", tone: "blue" },
   { id: "ncue-bai-sha", title: "彰師白沙", date: "2026-05-25", tone: "red" },
+  { id: "cgu-light-fire", title: "長庚光火", date: "2026-05-26", tone: "blue" },
   { id: "ncu-fire", title: "中央火舞", date: "2026-05-26", tone: "blue" },
   { id: "ccu-fire-art", title: "中正火藝", date: "2026-05-26", tone: "orange" },
   { id: "nhu-fire", title: "南華火舞", date: "2026-05-27", tone: "orange" },
