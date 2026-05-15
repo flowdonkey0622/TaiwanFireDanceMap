@@ -19,6 +19,7 @@ type CountyTopology = Topology<{
 
 const WIDTH = 620;
 const HEIGHT = 760;
+const ISLAND_COUNTIES = new Set(["金門縣", "連江縣", "澎湖縣"]);
 
 const countyDisplayNames: Record<string, string> = {
   台北市: "臺北市",
@@ -44,19 +45,114 @@ export function TaiwanMap({
   onHoverCounty,
   onSelectCounty,
 }: TaiwanMapProps) {
-  const { counties, path } = useMemo(() => {
+  const { mainCounties, islandGroups } = useMemo(() => {
     const topology = topoData as unknown as CountyTopology;
     const collection = feature(
       topology,
       topology.objects.layer1,
     ) as GeoJSON.FeatureCollection<GeoJSON.Geometry, CountyFeature["properties"]>;
+    const counties = collection.features as CountyFeature[];
+    const mainCounties = counties.filter(
+      (county) => !ISLAND_COUNTIES.has(getCountyName(county)),
+    );
 
-    const projection = geoMercator().fitSize([WIDTH, HEIGHT], collection);
+    const mainCollection: GeoJSON.FeatureCollection<
+      GeoJSON.Geometry,
+      CountyFeature["properties"]
+    > = {
+      type: "FeatureCollection",
+      features: mainCounties,
+    };
+    const mainProjection = geoMercator().fitExtent(
+      [
+        [166, 34],
+        [592, 724],
+      ],
+      mainCollection,
+    );
+    const mainPath = geoPath(mainProjection);
+
+    const islandBoxes: Record<string, { x: number; y: number; width: number; height: number }> = {
+      連江縣: { x: 26, y: 92, width: 112, height: 112 },
+      金門縣: { x: 26, y: 226, width: 112, height: 112 },
+      澎湖縣: { x: 26, y: 360, width: 112, height: 132 },
+    };
+
+    const islandGroups = Object.entries(islandBoxes).flatMap(([countyName, box]) => {
+      const featureItem = counties.find((county) => getCountyName(county) === countyName);
+      if (!featureItem) {
+        return [];
+      }
+
+      const islandProjection = geoMercator().fitExtent(
+        [
+          [box.x + 18, box.y + 22],
+          [box.x + box.width - 18, box.y + box.height - 18],
+        ],
+        featureItem,
+      );
+
+      return [
+        {
+          box,
+          county: featureItem,
+          countyName,
+          path: geoPath(islandProjection),
+        },
+      ];
+    });
+
     return {
-      counties: collection.features as CountyFeature[],
-      path: geoPath(projection),
+      mainCounties: mainCounties.map((county) => ({
+        county,
+        countyName: getCountyName(county),
+        path: mainPath,
+      })),
+      islandGroups,
     };
   }, []);
+
+  const renderCounty = (
+    county: CountyFeature,
+    countyName: string,
+    path: ReturnType<typeof geoPath>,
+    keyPrefix = "",
+  ) => {
+    const isActive = activeCounty === countyName;
+    const isSelected = selectedCounty === countyName;
+    const count = eventCounts[countyName] ?? 0;
+
+    return (
+      <path
+        key={`${keyPrefix}${countyName}`}
+        className={[
+          "county",
+          isActive ? "is-active" : "",
+          isSelected ? "is-selected" : "",
+          count > 0 ? "has-events" : "",
+        ]
+          .filter(Boolean)
+          .join(" ")}
+        d={path(county) ?? ""}
+        tabIndex={0}
+        role="button"
+        aria-label={`${countyName}，${count} 筆火舞活動`}
+        onMouseEnter={() => onHoverCounty(countyName)}
+        onMouseLeave={() => onHoverCounty(null)}
+        onFocus={() => onHoverCounty(countyName)}
+        onBlur={() => onHoverCounty(null)}
+        onClick={() => onSelectCounty(countyName)}
+        onKeyDown={(event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            onSelectCounty(countyName);
+          }
+        }}
+      >
+        <title>{`${countyName}：${count} 筆活動`}</title>
+      </path>
+    );
+  };
 
   return (
     <figure className="map-shell" aria-label="台灣火舞活動互動地圖">
@@ -90,51 +186,43 @@ export function TaiwanMap({
           </linearGradient>
         </defs>
 
-        <g className="map-depth" aria-hidden="true">
-          {counties.map((county) => {
-            const countyName = getCountyName(county);
-            return <path key={`${countyName}-depth`} d={path(county) ?? ""} />;
-          })}
+        <g className="map-depth main-depth" aria-hidden="true">
+          {mainCounties.map(({ county, countyName, path }) => (
+            <path key={`${countyName}-depth`} d={path(county) ?? ""} />
+          ))}
         </g>
 
-        <g className="map-counties">
-          {counties.map((county) => {
-            const countyName = getCountyName(county);
-            const isActive = activeCounty === countyName;
-            const isSelected = selectedCounty === countyName;
-            const count = eventCounts[countyName] ?? 0;
+        <g className="map-counties main-counties">
+          {mainCounties.map(({ county, countyName, path }) =>
+            renderCounty(county, countyName, path),
+          )}
+        </g>
 
-            return (
-              <path
-                key={countyName}
-                className={[
-                  "county",
-                  isActive ? "is-active" : "",
-                  isSelected ? "is-selected" : "",
-                  count > 0 ? "has-events" : "",
-                ]
-                  .filter(Boolean)
-                  .join(" ")}
-                d={path(county) ?? ""}
-                tabIndex={0}
-                role="button"
-                aria-label={`${countyName}，${count} 筆火舞活動`}
-                onMouseEnter={() => onHoverCounty(countyName)}
-                onMouseLeave={() => onHoverCounty(null)}
-                onFocus={() => onHoverCounty(countyName)}
-                onBlur={() => onHoverCounty(null)}
-                onClick={() => onSelectCounty(countyName)}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter" || event.key === " ") {
-                    event.preventDefault();
-                    onSelectCounty(countyName);
-                  }
-                }}
+        <g className="island-insets" aria-label="離島放大圖">
+          {islandGroups.map(({ box, county, countyName, path }) => (
+            <g className="island-inset" key={`${countyName}-inset`}>
+              <rect
+                className="island-inset__frame"
+                x={box.x}
+                y={box.y}
+                width={box.width}
+                height={box.height}
+                rx="8"
+              />
+              <text
+                className="island-inset__label"
+                x={box.x + box.width / 2}
+                y={box.y + box.height - 10}
+                textAnchor="middle"
               >
-                <title>{`${countyName}：${count} 筆活動`}</title>
-              </path>
-            );
-          })}
+                {countyName.replace("縣", "")}
+              </text>
+              <g className="map-depth island-depth" aria-hidden="true">
+                <path d={path(county) ?? ""} />
+              </g>
+              {renderCounty(county, countyName, path, "island-")}
+            </g>
+          ))}
         </g>
       </svg>
     </figure>
