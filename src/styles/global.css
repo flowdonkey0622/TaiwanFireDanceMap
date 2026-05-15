@@ -516,18 +516,22 @@ h1 {
   display: grid;
   gap: 6px;
   justify-items: center;
+  min-width: 0;
 }
 
 .calendar-event {
   display: block;
   width: min(100%, 142px);
+  max-width: 100%;
   padding: 6px 8px;
   border-radius: 8px;
   font-size: 0.95rem;
   font-weight: 900;
   line-height: 1.35;
   text-align: center;
-  word-break: keep-all;
+  overflow-wrap: anywhere;
+  white-space: normal;
+  word-break: normal;
 }
 
 .calendar-event--blue {
@@ -632,6 +636,7 @@ h1 {
 
   .calendar-event {
     width: 100%;
+    max-width: 118px;
     font-size: 0.82rem;
   }
 }
@@ -736,6 +741,6 @@ h1 {
     border-radius: 6px;
     font-size: 0.64rem;
     line-height: 1.2;
-    word-break: break-word;
+    max-width: 100%;
   }
 }
