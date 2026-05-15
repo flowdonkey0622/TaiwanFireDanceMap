@@ -41,6 +41,20 @@ npm run preview
 - `npm run build`：執行 TypeScript 檢查並建立正式版檔案
 - `npm run preview`：預覽正式版 build 結果
 
+## GitHub Pages 部署
+
+此專案部署在：
+
+```text
+https://flowdonkey0622.github.io/TaiwanFireDanceMap/
+```
+
+Vite 已在 `vite.config.ts` 設定 `base: "/TaiwanFireDanceMap/"`，讓正式版資源路徑符合 GitHub Pages 的 repo 子路徑。部署流程由 `.github/workflows/deploy.yml` 自動執行，推送到 `main` 後會安裝依賴、執行 `npm run build`，並將 `dist` 發布到 GitHub Pages。
+
+GitHub repository 的 Pages 設定需選擇：
+
+- Source: `GitHub Actions`
+
 ## 活動資料維護
 
 範例活動資料位於：
