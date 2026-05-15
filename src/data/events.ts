@@ -93,7 +93,7 @@ export const fireDanceEvents: FireDanceEvent[] = [
     county: "新北市",
     title: "輔大光火藝術社 FJULF 10th 成果發表會",
     date: "2026-05-27",
-    venue: "輔仁大學",
+    venue: "輔大光火",
     type: "performance",
     summary: "輔大光火藝術社 FJULF 10th 成果發表會。IG：@fjulf_feellafire",
     link: "https://www.instagram.com/fjulf_feellafire/",
@@ -226,7 +226,7 @@ export const fireDanceEvents: FireDanceEvent[] = [
     venue: "長庚大學",
     type: "performance",
     summary: "長庚大學光火藝術社 2026 上半年成果發表會。IG：@cgu_light_fire",
-    link: "https://www.instagram.com/cgu_light_fire/",
+    link: "https://www.instagram.com/cgu_light.fire/",
   },
 ];
 

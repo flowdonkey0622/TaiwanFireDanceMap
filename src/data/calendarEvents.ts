@@ -17,7 +17,7 @@ export const calendarEvents: CalendarEvent[] = [
   { id: "ncu-fire", title: "中央火舞", date: "2026-05-26", tone: "blue" },
   { id: "ccu-fire-art", title: "中正火藝", date: "2026-05-26", tone: "orange" },
   { id: "nhu-fire", title: "南華火舞", date: "2026-05-27", tone: "orange" },
-  { id: "fju-fire", title: "輔仁火舞", date: "2026-05-27", tone: "blue" },
+  { id: "fju-fire", title: "輔大光火", date: "2026-05-27", tone: "blue" },
   { id: "yuntech-fire", title: "雲科熾舞", date: "2026-05-28", tone: "red" },
   { id: "ndhu-fire", title: "東華火舞", date: "2026-05-28", tone: "purple" },
   { id: "cycu-fire", title: "中原火舞", date: "2026-05-30", tone: "blue" },
