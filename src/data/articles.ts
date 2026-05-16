@@ -34,4 +34,15 @@ export const articleLinks: ArticleLink[] = [
     tags: ["Poi", "Body Tracing", "Flow Arts"],
     accent: "sky",
   },
+  {
+    id: "Fire Fan Techniques Instruction and Overview by Pineapple",
+    title: "包鳳梨中部粽火扇技巧教學及概論",
+    description:
+      "將 reels、weaves、windmills、crossers、腰繞與 meltdowns 等動作，依據位置與時序節奏整理進同一套框架，並透過 schemes 與 beat graphs 分析說明。雖然最初為 poi 設計，也能作為其他 Flow Arts 道具的參考。",
+    url: "https://www.pineappletetrapod.com/zh/archive/tutorial",
+    source: "Website",
+    publishedLabel: "框架文章",
+    tags: ["Fan", "火扇", "Flow Arts"],
+    accent: "ember",
+  },
 ];

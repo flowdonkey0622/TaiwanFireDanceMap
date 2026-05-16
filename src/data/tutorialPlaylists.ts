@@ -17,6 +17,13 @@ export const tutorialPlaylists: TutorialPlaylist[] = [
     accent: "ember",
   },
   {
+    id: "poi",
+    title: "Poi 教學",
+    description: "由松火流建立，基礎 Poi 練習&概念教學播放清單。",
+    playlistId: "PLILSeD4ZMYtuu28RTO1B6wM48mPMpuGvU",
+    accent: "ember",
+  },
+  {
     id: "meteor",
     title: "流星教學",
     description: "整理流星道具的入門操作、轉換與節奏練習內容。",
@@ -29,5 +36,12 @@ export const tutorialPlaylists: TutorialPlaylist[] = [
     description: "短棍控制、旋轉、拋接與火舞基礎動作的教學播放清單。",
     playlistId: "PLtwryFmhqGCOPna-boongv3NeVZsnTV4w",
     accent: "sun",
+  },
+  {
+    id: "staff",
+    title: "長棍教學",
+    description: "由松火流建立，基礎長棍練習&概念教學播放清單。",
+    playlistId: "PLILSeD4ZMYtsbDA4WYC1TXfy92Wv7zkOa",
+    accent: "ember",
   },
 ];
