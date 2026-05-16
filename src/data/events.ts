@@ -165,8 +165,8 @@ export const fireDanceEvents: FireDanceEvent[] = [
     date: "2026-06-03",
     venue: "南臺科技大學",
     type: "performance",
-    summary: "南臺科技大學熾炎火舞社 2026 上半年成果發表會。IG：@nkust_k.f.a",
-    link: "https://www.instagram.com/nkust_k.f.a/",
+    summary: "南臺科技大學熾炎火舞社 2026 上半年成果發表會。IG：@chi_yan_fire",
+    link: "https://www.instagram.com/chi_yan_fire/",
   },
   {
     id: "thu-firedance-2026-recital",
