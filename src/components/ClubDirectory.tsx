@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { getCountyOrder, taiwanRegions } from "../data/taiwanRegions";
 import { isSupabaseConfigured } from "../lib/supabase";
 import { getPublishedClubs } from "../services/clubs";
 import type { FireDanceClub } from "../types";
@@ -9,6 +10,13 @@ export function ClubDirectory() {
   const [clubs, setClubs] = useState<FireDanceClub[]>([]);
   const [loadState, setLoadState] = useState<LoadState>("idle");
   const [errorMessage, setErrorMessage] = useState("");
+  const [openRegions, setOpenRegions] = useState<Record<string, boolean>>({
+    北區: true,
+    中區: true,
+    南區: true,
+    東區: true,
+    離島: true,
+  });
 
   useEffect(() => {
     let isMounted = true;
@@ -43,14 +51,30 @@ export function ClubDirectory() {
     };
   }, []);
 
-  const clubsByCounty = useMemo(
+  const clubsByRegion = useMemo(
     () =>
-      clubs.reduce<Record<string, FireDanceClub[]>>((groups, club) => {
-        groups[club.county] = [...(groups[club.county] ?? []), club];
-        return groups;
-      }, {}),
+      taiwanRegions
+        .map((region) => ({
+          ...region,
+          clubs: clubs
+            .filter((club) => region.counties.includes(club.county))
+            .sort(
+              (a, b) =>
+                getCountyOrder(a.county) - getCountyOrder(b.county) ||
+                a.schoolName.localeCompare(b.schoolName, "zh-Hant"),
+            ),
+        }))
+        .filter((region) => region.clubs.length > 0),
     [clubs],
   );
+
+  // Region toggles keep the list scannable after clubs grow across multiple areas.
+  function toggleRegion(regionLabel: string) {
+    setOpenRegions({
+      ...openRegions,
+      [regionLabel]: !openRegions[regionLabel],
+    });
+  }
 
   return (
     <section className="club-section" aria-labelledby="club-title">
@@ -76,32 +100,46 @@ export function ClubDirectory() {
         </div>
       ) : (
         <div className="club-groups">
-          {Object.entries(clubsByCounty).map(([county, countyClubs]) => (
-            <section className="club-group" key={county} aria-labelledby={`club-${county}`}>
-              <h3 id={`club-${county}`}>{county}</h3>
-              <div className="club-grid">
-                {countyClubs.map((club) => (
-                  <article className="club-card" key={club.id}>
-                    <div>
-                      <p className="eyebrow">{club.schoolName}</p>
-                      <h4>{club.clubName}</h4>
-                      {club.summary ? <p>{club.summary}</p> : null}
-                    </div>
-                    <div className="club-card__links">
-                      {club.instagramUrl ? (
-                        <a href={club.instagramUrl} target="_blank" rel="noreferrer">
-                          Instagram
-                        </a>
-                      ) : null}
-                      {club.websiteUrl ? (
-                        <a href={club.websiteUrl} target="_blank" rel="noreferrer">
-                          粉絲專頁
-                        </a>
-                      ) : null}
-                    </div>
-                  </article>
-                ))}
-              </div>
+          {clubsByRegion.map((region) => (
+            <section
+              className="club-group"
+              key={region.label}
+              aria-labelledby={`club-${region.label}`}
+            >
+              <button
+                className="club-group__toggle"
+                type="button"
+                onClick={() => toggleRegion(region.label)}
+                aria-expanded={openRegions[region.label]}
+              >
+                <span id={`club-${region.label}`}>{region.label}</span>
+                <span>{openRegions[region.label] ? "收合" : "展開"}</span>
+              </button>
+              {openRegions[region.label] ? (
+                <div className="club-grid">
+                  {region.clubs.map((club) => (
+                    <article className="club-card" key={club.id}>
+                      <div>
+                        <p className="eyebrow">{club.schoolName}</p>
+                        <h4>{club.clubName}</h4>
+                        {club.summary ? <p>{club.summary}</p> : null}
+                      </div>
+                      <div className="club-card__links">
+                        {club.instagramUrl ? (
+                          <a href={club.instagramUrl} target="_blank" rel="noreferrer">
+                            Instagram
+                          </a>
+                        ) : null}
+                        {club.youtubeUrl ? (
+                          <a href={club.youtubeUrl} target="_blank" rel="noreferrer">
+                            YouTube
+                          </a>
+                        ) : null}
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              ) : null}
             </section>
           ))}
         </div>

@@ -71,7 +71,7 @@ export const fireDanceEvents: FireDanceEvent[] = [
   {
     id: "ccu-fire-2026-recital",
     county: "嘉義縣",
-    title: "中正大學火舞藝術社成果發表會",
+    title: "中正火藝2026大成表演 – 【同歸】",
     date: "2026-05-26",
     venue: "國立中正大學",
     type: "performance",
@@ -91,11 +91,11 @@ export const fireDanceEvents: FireDanceEvent[] = [
   {
     id: "fjulf-2026-recital",
     county: "新北市",
-    title: "輔大光火藝術社 FJULF 10th 成果發表會",
+    title: "114-2輔大光火夏季成發「與十炬進」",
     date: "2026-05-27",
-    venue: "輔大光火",
+    venue: "輔仁大學",
     type: "performance",
-    summary: "輔大光火藝術社 FJULF 10th 成果發表會。IG：@fjulf_feellafire",
+    summary: "輔大光火藝術社 FJULF 10th 成果發表會。時間: 2026/5/27 (三)；18:30入場；19:00正式開始；地點:中美堂前",
     link: "https://www.instagram.com/fjulf_feellafire/",
   },
   {
@@ -131,21 +131,21 @@ export const fireDanceEvents: FireDanceEvent[] = [
   {
     id: "nchu-flowart-2026-recital",
     county: "臺中市",
-    title: "中興大學光舞藝術社成果發表會",
+    title: "中興大學光舞藝術社夏季成發《失焦光圈》",
     date: "2026-06-01",
     venue: "國立中興大學",
     type: "performance",
-    summary: "中興大學光舞藝術社 2026 上半年成果發表會。IG：@nchu_flowart",
+    summary: "夏季成發《失焦光圈》 ；6/1晚上7:00，就在中興大學小禮堂！",
     link: "https://www.instagram.com/nchu_flowart/",
   },
   {
     id: "nccu-firedance-2026-recital",
     county: "臺北市",
-    title: "政大火舞社成果發表會",
+    title: "政大火舞社第11屆夏季成發ー《窩咬焰牌》",
     date: "2026-06-02",
     venue: "國立政治大學",
     type: "performance",
-    summary: "政大火舞社 2026 上半年成果發表會。IG：@nccu.firedance_",
+    summary: "時間：6/2 Tue. 19:00～ ；地點：政大四維堂前廣場",
     link: "https://www.instagram.com/nccu.firedance_/",
   },
   {
@@ -181,11 +181,11 @@ export const fireDanceEvents: FireDanceEvent[] = [
   {
     id: "ncku-firedance-2026-recital",
     county: "臺南市",
-    title: "成大火舞社成果發表會",
+    title: "成大火舞【 2026夏季成發 狄燠尼索燍】",
     date: "2026-06-04",
     venue: "國立成功大學",
     type: "performance",
-    summary: "成大火舞社 2026 上半年成果發表會。IG：@ncku_firedance",
+    summary: "18:30開始入場；19:00正式開始；地點：國立成功大學未來館前廣場",
     link: "https://www.instagram.com/ncku_firedance/",
   },
   {

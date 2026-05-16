@@ -1,6 +1,7 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { logoUrl } from "../assets";
+import { counties, taiwanRegions } from "../data/taiwanRegions";
 import { isSupabaseConfigured, supabase } from "../lib/supabase";
 import {
   archiveClub,
@@ -12,37 +13,13 @@ import {
 } from "../services/clubs";
 import type { FireDanceClub } from "../types";
 
-const counties = [
-  "臺北市",
-  "新北市",
-  "桃園市",
-  "新竹市",
-  "新竹縣",
-  "苗栗縣",
-  "臺中市",
-  "彰化縣",
-  "南投縣",
-  "雲林縣",
-  "嘉義市",
-  "嘉義縣",
-  "臺南市",
-  "高雄市",
-  "屏東縣",
-  "宜蘭縣",
-  "花蓮縣",
-  "臺東縣",
-  "澎湖縣",
-  "金門縣",
-  "連江縣",
-];
-
 const emptyClubForm: ClubInput = {
   schoolName: "",
   clubName: "",
   county: "臺北市",
   summary: "",
   instagramUrl: "",
-  websiteUrl: "",
+  youtubeUrl: "",
   status: "draft",
 };
 
@@ -53,7 +30,7 @@ function toFormState(club: FireDanceClub): ClubInput {
     county: club.county,
     summary: club.summary,
     instagramUrl: club.instagramUrl ?? "",
-    websiteUrl: club.websiteUrl ?? "",
+    youtubeUrl: club.youtubeUrl ?? "",
     status: club.status ?? "draft",
   };
 }
@@ -85,6 +62,18 @@ export function AdminApp() {
   const selectedClub = useMemo(
     () => clubs.find((club) => club.id === selectedClubId) ?? null,
     [clubs, selectedClubId],
+  );
+  // While creating, existing club buttons stay disabled so unsaved form input is not lost.
+  const isCreatingClub = selectedClubId === null;
+  const clubsByRegion = useMemo(
+    () =>
+      taiwanRegions
+        .map((region) => ({
+          ...region,
+          clubs: clubs.filter((club) => region.counties.includes(club.county)),
+        }))
+        .filter((region) => region.clubs.length > 0),
+    [clubs],
   );
 
   useEffect(() => {
@@ -170,6 +159,10 @@ export function AdminApp() {
   }
 
   function handleSelectClub(club: FireDanceClub) {
+    if (isCreatingClub) {
+      return;
+    }
+
     setSelectedClubId(club.id);
     setFormState(toFormState(club));
     setMessage("");
@@ -179,6 +172,14 @@ export function AdminApp() {
   function handleNewClub() {
     setSelectedClubId(null);
     setFormState(emptyClubForm);
+    setMessage("");
+    setErrorMessage("");
+  }
+
+  function handleCancelNewClub() {
+    const firstClub = clubs[0] ?? null;
+    setSelectedClubId(firstClub?.id ?? null);
+    setFormState(firstClub ? toFormState(firstClub) : emptyClubForm);
     setMessage("");
     setErrorMessage("");
   }
@@ -307,27 +308,33 @@ export function AdminApp() {
         <section className="admin-card">
           <div className="admin-card__title">
             <h2>社團列表</h2>
-            <button type="button" onClick={handleNewClub}>
+            <button type="button" onClick={handleNewClub} disabled={isCreatingClub}>
               新增社團
             </button>
           </div>
           <div className="admin-list">
-            {clubs.map((club) => (
-              <button
-                className={
-                  selectedClub?.id === club.id
-                    ? "admin-list-item is-active"
-                    : "admin-list-item"
-                }
-                type="button"
-                key={club.id}
-                onClick={() => handleSelectClub(club)}
-              >
-                <span>{club.clubName}</span>
-                <small>
-                  {club.county} / {statusLabel(club.status)}
-                </small>
-              </button>
+            {clubsByRegion.map((region) => (
+              <div className="admin-list-region" key={region.label}>
+                <h3>{region.label}</h3>
+                {region.clubs.map((club) => (
+                  <button
+                    className={
+                      selectedClub?.id === club.id
+                        ? "admin-list-item is-active"
+                        : "admin-list-item"
+                    }
+                    type="button"
+                    key={club.id}
+                    onClick={() => handleSelectClub(club)}
+                    disabled={isCreatingClub}
+                  >
+                    <span>{club.clubName}</span>
+                    <small>
+                      {club.county} / {statusLabel(club.status)}
+                    </small>
+                  </button>
+                ))}
+              </div>
             ))}
           </div>
         </section>
@@ -392,12 +399,12 @@ export function AdminApp() {
               />
             </label>
             <label>
-              粉絲專頁 / 網站 URL
+              YouTube 頻道 URL
               <input
                 type="url"
-                value={formState.websiteUrl}
+                value={formState.youtubeUrl}
                 onChange={(event) =>
-                  setFormState({ ...formState, websiteUrl: event.target.value })
+                  setFormState({ ...formState, youtubeUrl: event.target.value })
                 }
               />
             </label>
@@ -434,7 +441,16 @@ export function AdminApp() {
                 >
                   封存
                 </button>
-              ) : null}
+              ) : (
+                <button
+                  className="admin-secondary-button"
+                  type="button"
+                  onClick={handleCancelNewClub}
+                  disabled={isSaving}
+                >
+                  取消新增
+                </button>
+              )}
             </div>
           </form>
         </section>

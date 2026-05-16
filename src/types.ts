@@ -18,7 +18,7 @@ export type FireDanceClub = {
   county: CountyName;
   summary: string;
   instagramUrl: string | null;
-  websiteUrl: string | null;
+  youtubeUrl: string | null;
   status?: "draft" | "published" | "archived";
 };
 
