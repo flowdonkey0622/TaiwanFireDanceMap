@@ -8,9 +8,11 @@
 - 使用 `public/flow-donkey-logo-circle.png` 作為網站品牌 Logo 與 favicon
 - 低成本立體視覺：SVG 陰影、底層偏移與 hover 位移
 - 點擊縣市顯示活動數量、近期活動、日期、地點與連結
-- 地圖 / 成發日曆 / 教學影片分頁切換
+- 地圖 / 成發日曆 / 教學影片 / 文章連結分頁切換
 - 參考 Fire & Flow Donkey 日曆視覺的 2026 年 5、6 月活動月曆
 - 依 Poi、流星、短棍分類嵌入 YouTube 教學播放清單
+- 收錄文章連結與預覽卡片
+- 在互動地圖頁收錄不限定縣市的網路活動分享
 - 無活動資料的縣市提供穩定 fallback 內容
 - 支援鍵盤操作：縣市 path 可用 `Tab` 聚焦，按 `Enter` 或空白鍵選取
 - 響應式版面，桌面與手機寬度皆可操作
@@ -132,6 +134,82 @@ https://youtube.com/playlist?list=PLtwryFmhqGCN4RSPoFJSB-lTwYDHzrXz3
 }
 ```
 
+## 文章連結資料維護
+
+文章連結資料位於：
+
+```text
+src/data/articles.ts
+```
+
+文章預覽採手動維護，不會在前端即時抓 Medium 或其他外部網站內容。這樣可以避免外部平台限制抓取、標題摘要變動或載入失敗造成頁面不穩。
+
+每筆文章資料包含：
+
+- `id`：唯一文章 ID，例如 `contact-staff-semiotics-a0`
+- `title`：文章標題
+- `description`：文章預覽摘要
+- `url`：文章連結
+- `source`：來源平台，例如 `Medium`
+- `publishedLabel`：顯示在卡片上的補充資訊，例如 `文章連結` 或日期
+- `tags`：文章標籤陣列
+- `accent`：卡片左側色條，可用 `ember`、`sky`、`sun`
+
+新增文章範例：
+
+```ts
+{
+  id: "new-flow-article",
+  title: "新的 Flow Arts 文章",
+  description: "這裡放文章摘要，建議一到兩句即可。",
+  url: "https://example.com/article",
+  source: "Medium",
+  publishedLabel: "2026.05",
+  tags: ["Flow Arts", "火舞"],
+  accent: "sky",
+}
+```
+
+## 網路活動資料維護
+
+網路活動資料位於：
+
+```text
+src/data/onlineActivities.ts
+```
+
+此區塊適合放不限定縣市的 Instagram 挑戰、影片招募、線上共創或表單活動。資料採手動維護，不會嵌入 Instagram 貼文或即時抓取表單狀態，避免外部平台限制造成畫面不穩。
+
+每筆網路活動資料包含：
+
+- `id`：唯一活動 ID，例如 `taiwan-poi-challenge`
+- `title`：活動名稱
+- `description`：活動摘要
+- `period`：活動期間，可省略
+- `primaryLink`：主要連結，包含 `label` 與 `url`
+- `secondaryLink`：第二連結，可省略，適合放報名表單
+- `accent`：卡片左側色條，可用 `ember`、`sky`、`sun`
+
+新增網路活動範例：
+
+```ts
+{
+  id: "new-online-challenge",
+  title: "新的線上挑戰",
+  description: "這裡放活動摘要，建議一到兩句即可。",
+  period: "活動期間：6/1 ～ 6/30",
+  primaryLink: {
+    label: "查看活動貼文",
+    url: "https://www.instagram.com/your-post",
+  },
+  secondaryLink: {
+    label: "填寫表單",
+    url: "https://forms.gle/your-form",
+  },
+  accent: "ember",
+}
+```
+
 ## 地圖資料
 
 縣市邊界資料放在：
@@ -149,11 +227,15 @@ src/
   components/
     CalendarView.tsx
     CountyPopup.tsx
+    OnlineActivities.tsx
     TaiwanMap.tsx
     TutorialVideos.tsx
+    ArticleLinks.tsx
   data/
+    articles.ts
     calendarEvents.ts
     events.ts
+    onlineActivities.ts
     taiwan-counties.topo.json
     tutorialPlaylists.ts
   styles/

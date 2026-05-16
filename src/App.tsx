@@ -1,13 +1,17 @@
 import { useMemo, useState } from "react";
 import { logoUrl } from "./assets";
+import { ArticleLinks } from "./components/ArticleLinks";
 import { CalendarView } from "./components/CalendarView";
 import { CountyPopup } from "./components/CountyPopup";
+import { OnlineActivities } from "./components/OnlineActivities";
 import { TaiwanMap } from "./components/TaiwanMap";
 import { TutorialVideos } from "./components/TutorialVideos";
 import { fireDanceEvents } from "./data/events";
 
 function App() {
-  const [activeView, setActiveView] = useState<"map" | "calendar" | "tutorials">("map");
+  const [activeView, setActiveView] = useState<
+    "map" | "calendar" | "tutorials" | "articles"
+  >("map");
   const [activeCounty, setActiveCounty] = useState<string | null>(null);
   const [selectedCounty, setSelectedCounty] = useState<string | null>(null);
 
@@ -71,43 +75,59 @@ function App() {
           >
             教學影片
           </button>
+          <button
+            className={activeView === "articles" ? "view-tab is-active" : "view-tab"}
+            type="button"
+            role="tab"
+            aria-selected={activeView === "articles"}
+            onClick={() => setActiveView("articles")}
+          >
+            文章連結
+          </button>
         </div>
 
         {activeView === "map" ? (
-          <div className="workspace" role="tabpanel" aria-label="互動地圖">
-            <div className="map-card">
-              <TaiwanMap
-                activeCounty={activeCounty}
-                selectedCounty={selectedCounty}
-                eventCounts={eventCounts}
-                onHoverCounty={setActiveCounty}
-                onSelectCounty={setSelectedCounty}
-              />
-              <div className="map-status" aria-live="polite">
-                {highlightedCounty ? (
-                  <>
-                    <span>{highlightedCounty}</span>
-                    <strong>{eventCounts[highlightedCounty] ?? 0}</strong>
-                    <span>筆活動</span>
-                  </>
-                ) : (
-                  <span>滑過或點擊縣市查看活動</span>
-                )}
+          <div role="tabpanel" aria-label="互動地圖">
+            <div className="workspace">
+              <div className="map-card">
+                <TaiwanMap
+                  activeCounty={activeCounty}
+                  selectedCounty={selectedCounty}
+                  eventCounts={eventCounts}
+                  onHoverCounty={setActiveCounty}
+                  onSelectCounty={setSelectedCounty}
+                />
+                <div className="map-status" aria-live="polite">
+                  {highlightedCounty ? (
+                    <>
+                      <span>{highlightedCounty}</span>
+                      <strong>{eventCounts[highlightedCounty] ?? 0}</strong>
+                      <span>筆活動</span>
+                    </>
+                  ) : (
+                    <span>滑過或點擊縣市查看活動</span>
+                  )}
+                </div>
               </div>
-            </div>
 
-            <CountyPopup
-              countyName={selectedCounty}
-              onClose={() => setSelectedCounty(null)}
-            />
+              <CountyPopup
+                countyName={selectedCounty}
+                onClose={() => setSelectedCounty(null)}
+              />
+            </div>
+            <OnlineActivities />
           </div>
         ) : activeView === "calendar" ? (
           <div role="tabpanel" aria-label="成發日曆">
             <CalendarView />
           </div>
-        ) : (
+        ) : activeView === "tutorials" ? (
           <div role="tabpanel" aria-label="教學影片">
             <TutorialVideos />
+          </div>
+        ) : (
+          <div role="tabpanel" aria-label="文章連結">
+            <ArticleLinks />
           </div>
         )}
       </section>
