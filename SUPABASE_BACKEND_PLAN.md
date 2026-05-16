@@ -73,7 +73,7 @@ Supabase
 - `county`：縣市名稱。
 - `summary`：社團簡介。
 - `instagram_url`：Instagram 連結。
-- `website_url`：其他網站或社群連結。
+- `youtube_url`：YouTube 頻道連結。
 - `status`：`draft` 或 `published`。
 - `created_at`：建立時間。
 - `updated_at`：更新時間。
@@ -338,4 +338,3 @@ Supabase Free 適合 MVP 與低流量初期使用。
 - 站內長文編輯器。
 
 這些功能都可以等資料量、管理流程與實際需求更明確後再加入。
-

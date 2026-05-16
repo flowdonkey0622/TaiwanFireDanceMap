@@ -20,7 +20,7 @@ type ClubRow = {
   county: string;
   summary: string;
   instagram_url: string | null;
-  Youtube_url: string | null;
+  youtube_url: string | null;
   status?: ClubStatus;
 };
 
@@ -33,7 +33,7 @@ function toFireDanceClub(row: ClubRow): FireDanceClub {
     county: row.county,
     summary: row.summary,
     instagramUrl: row.instagram_url,
-    youtubeUrl: row.Youtube_url,
+    youtubeUrl: row.youtube_url,
     status: row.status,
   };
 }
@@ -45,7 +45,7 @@ function toClubRow(input: ClubInput) {
     county: input.county.trim(),
     summary: input.summary.trim(),
     instagram_url: input.instagramUrl.trim() || null,
-    Youtube_url: input.youtubeUrl.trim() || null,
+    youtube_url: input.youtubeUrl.trim() || null,
     status: input.status,
   };
 }
@@ -58,7 +58,7 @@ export async function getPublishedClubs(): Promise<FireDanceClub[]> {
   const { data, error } = await supabase
     .from("clubs")
     .select(
-      "id, school_name, club_name, county, summary, instagram_url, Youtube_url",
+      "id, school_name, club_name, county, summary, instagram_url, youtube_url",
     )
     .eq("status", "published")
     .order("county", { ascending: true })
@@ -79,7 +79,7 @@ export async function getManagedClubs(): Promise<FireDanceClub[]> {
   const { data, error } = await supabase
     .from("clubs")
     .select(
-      "id, school_name, club_name, county, summary, instagram_url, Youtube_url, status",
+      "id, school_name, club_name, county, summary, instagram_url, youtube_url, status",
     )
     .order("county", { ascending: true })
     .order("school_name", { ascending: true });
