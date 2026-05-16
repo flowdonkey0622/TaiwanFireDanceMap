@@ -225,7 +225,7 @@ export const fireDanceEvents: FireDanceEvent[] = [
     date: "2026-05-26",
     venue: "長庚大學",
     type: "performance",
-    summary: "長庚大學光火藝術社 2026 上半年成果發表會。IG：@cgu_light_fire",
+    summary: "長庚大學光火藝術社 2026 上半年成果發表會。IG：@cgu_light.fire",
     link: "https://www.instagram.com/cgu_light.fire/",
   },
 ];
