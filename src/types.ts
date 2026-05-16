@@ -11,6 +11,17 @@ export type FireDanceEvent = {
   link: string;
 };
 
+export type FireDanceClub = {
+  id: string;
+  schoolName: string;
+  clubName: string;
+  county: CountyName;
+  summary: string;
+  instagramUrl: string | null;
+  websiteUrl: string | null;
+  status?: "draft" | "published" | "archived";
+};
+
 export type CountyFeatureProperties = {
   COUNTYSN?: string;
   COUNTYNAME?: string;

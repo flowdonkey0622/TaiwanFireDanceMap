@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { logoUrl } from "./assets";
 import { ArticleLinks } from "./components/ArticleLinks";
 import { CalendarView } from "./components/CalendarView";
+import { ClubDirectory } from "./components/ClubDirectory";
 import { CountyPopup } from "./components/CountyPopup";
 import { OnlineActivities } from "./components/OnlineActivities";
 import { TaiwanMap } from "./components/TaiwanMap";
@@ -10,7 +11,7 @@ import { fireDanceEvents } from "./data/events";
 
 function App() {
   const [activeView, setActiveView] = useState<
-    "map" | "calendar" | "tutorials" | "articles"
+    "map" | "calendar" | "tutorials" | "clubs" | "articles"
   >("map");
   const [activeCounty, setActiveCounty] = useState<string | null>(null);
   const [selectedCounty, setSelectedCounty] = useState<string | null>(null);
@@ -76,6 +77,15 @@ function App() {
             教學影片
           </button>
           <button
+            className={activeView === "clubs" ? "view-tab is-active" : "view-tab"}
+            type="button"
+            role="tab"
+            aria-selected={activeView === "clubs"}
+            onClick={() => setActiveView("clubs")}
+          >
+            火舞社團
+          </button>
+          <button
             className={activeView === "articles" ? "view-tab is-active" : "view-tab"}
             type="button"
             role="tab"
@@ -124,6 +134,10 @@ function App() {
         ) : activeView === "tutorials" ? (
           <div role="tabpanel" aria-label="教學影片">
             <TutorialVideos />
+          </div>
+        ) : activeView === "clubs" ? (
+          <div role="tabpanel" aria-label="火舞社團">
+            <ClubDirectory />
           </div>
         ) : (
           <div role="tabpanel" aria-label="文章連結">
