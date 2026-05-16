@@ -194,10 +194,10 @@ h1 {
 }
 
 .map-depth path {
-  transform: translate(10px, 15px);
+  transform: translate(5px, 7px);
   fill: #8d6243;
-  opacity: 0.35;
-  stroke: rgba(73, 47, 32, 0.18);
+  opacity: 0.18;
+  stroke: rgba(73, 47, 32, 0.1);
   stroke-width: 1;
 }
 
@@ -216,8 +216,8 @@ h1 {
 }
 
 .island-depth path {
-  transform: translate(4px, 5px);
-  opacity: 0.26;
+  transform: translate(3px, 3px);
+  opacity: 0.16;
 }
 
 .county {
@@ -253,7 +253,7 @@ h1 {
 }
 
 .county.is-selected {
-  filter: drop-shadow(0 10px 14px rgba(130, 48, 22, 0.32));
+  filter: drop-shadow(0 6px 8px rgba(130, 48, 22, 0.18));
 }
 
 .map-status {
@@ -607,6 +607,88 @@ h1 {
   color: #7c46df;
 }
 
+.tutorial-section {
+  padding: 26px;
+  border: 1px solid rgba(111, 65, 20, 0.12);
+  border-radius: 8px;
+  background:
+    radial-gradient(circle at 88% 16%, rgba(91, 134, 166, 0.16), transparent 30%),
+    linear-gradient(135deg, rgba(255, 249, 236, 0.9), rgba(255, 203, 133, 0.78));
+  box-shadow: 0 26px 68px rgba(111, 62, 18, 0.16);
+}
+
+.tutorial-intro {
+  max-width: 760px;
+  margin-bottom: 22px;
+}
+
+.tutorial-intro h2 {
+  margin-bottom: 10px;
+  color: #2d2114;
+  font-size: clamp(2rem, 5vw, 3.4rem);
+  line-height: 1;
+}
+
+.tutorial-intro p:not(.eyebrow) {
+  color: #5d402a;
+  line-height: 1.75;
+}
+
+.tutorial-grid {
+  display: grid;
+  gap: 18px;
+}
+
+.tutorial-card {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.72fr) minmax(320px, 1fr);
+  gap: 18px;
+  align-items: center;
+  padding: 18px;
+  border: 1px solid rgba(60, 43, 26, 0.12);
+  border-radius: 8px;
+  background: rgba(255, 253, 250, 0.9);
+  box-shadow: 0 14px 34px rgba(83, 45, 13, 0.12);
+}
+
+.tutorial-card--ember {
+  border-left: 8px solid #f05f32;
+}
+
+.tutorial-card--sky {
+  border-left: 8px solid #4f91c4;
+}
+
+.tutorial-card--sun {
+  border-left: 8px solid #f1a13a;
+}
+
+.tutorial-card__copy h3 {
+  margin-bottom: 10px;
+  color: #2f2518;
+  font-size: 1.5rem;
+}
+
+.tutorial-card__copy p:not(.eyebrow) {
+  color: #5f4a38;
+  line-height: 1.7;
+}
+
+.tutorial-video {
+  overflow: hidden;
+  border-radius: 8px;
+  background: #2b2116;
+  box-shadow: 0 16px 36px rgba(35, 21, 8, 0.2);
+  aspect-ratio: 16 / 9;
+}
+
+.tutorial-video iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
 .empty-state p {
   margin-bottom: 0;
 }
@@ -692,6 +774,14 @@ h1 {
     max-width: 108px;
     font-size: 0.82rem;
   }
+
+  .tutorial-section {
+    padding: 18px;
+  }
+
+  .tutorial-card {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 560px) {
@@ -717,7 +807,7 @@ h1 {
 
   .view-tabs {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
     width: 100%;
   }
 
@@ -813,5 +903,17 @@ h1 {
     font-size: 0.64rem;
     line-height: 1.2;
     max-width: 100%;
+  }
+
+  .tutorial-section {
+    padding: 12px;
+  }
+
+  .tutorial-card {
+    padding: 12px;
+  }
+
+  .tutorial-card__copy h3 {
+    font-size: 1.25rem;
   }
 }

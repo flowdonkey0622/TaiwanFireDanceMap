@@ -38,6 +38,51 @@ function getCountyName(featureItem: CountyFeature): string {
   return countyDisplayNames[sourceName] ?? sourceName;
 }
 
+function getRingArea(ring: GeoJSON.Position[]): number {
+  return Math.abs(
+    ring.reduce((area, point, index) => {
+      const nextPoint = ring[(index + 1) % ring.length];
+      return area + point[0] * nextPoint[1] - nextPoint[0] * point[1];
+    }, 0) / 2,
+  );
+}
+
+function getPolygonArea(polygon: GeoJSON.Position[][]): number {
+  const [outerRing, ...holes] = polygon;
+  return Math.max(
+    0,
+    getRingArea(outerRing) -
+      holes.reduce((area, ring) => area + getRingArea(ring), 0),
+  );
+}
+
+function removeSmallDetachedPolygons(county: CountyFeature): CountyFeature {
+  if (county.geometry.type !== "MultiPolygon") {
+    return county;
+  }
+
+  const polygons = county.geometry.coordinates;
+  const polygonAreas = polygons.map(getPolygonArea);
+  const largestArea = Math.max(...polygonAreas);
+  const filteredPolygons = polygons.filter(
+    (_, index) => polygonAreas[index] >= largestArea * 0.03,
+  );
+
+  if (filteredPolygons.length === polygons.length || filteredPolygons.length === 0) {
+    return county;
+  }
+
+  // The source map includes tiny detached coastal polygons that read as drawing errors
+  // at this scale. Keep them out of the main-island view without changing source data.
+  return {
+    ...county,
+    geometry: {
+      ...county.geometry,
+      coordinates: filteredPolygons,
+    },
+  };
+}
+
 export function TaiwanMap({
   activeCounty,
   selectedCounty,
@@ -52,9 +97,9 @@ export function TaiwanMap({
       topology.objects.layer1,
     ) as GeoJSON.FeatureCollection<GeoJSON.Geometry, CountyFeature["properties"]>;
     const counties = collection.features as CountyFeature[];
-    const mainCounties = counties.filter(
-      (county) => !ISLAND_COUNTIES.has(getCountyName(county)),
-    );
+    const mainCounties = counties
+      .filter((county) => !ISLAND_COUNTIES.has(getCountyName(county)))
+      .map(removeSmallDetachedPolygons);
 
     const mainCollection: GeoJSON.FeatureCollection<
       GeoJSON.Geometry,
@@ -170,10 +215,10 @@ export function TaiwanMap({
           <filter id="county-lift" x="-20%" y="-20%" width="140%" height="140%">
             <feDropShadow
               dx="0"
-              dy="6"
-              stdDeviation="4"
+              dy="3"
+              stdDeviation="2.5"
               floodColor="#101820"
-              floodOpacity="0.18"
+              floodOpacity="0.1"
             />
           </filter>
           <linearGradient id="county-fill" x1="0" x2="1" y1="0" y2="1">

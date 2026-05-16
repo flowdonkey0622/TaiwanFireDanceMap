@@ -3,10 +3,11 @@ import { logoUrl } from "./assets";
 import { CalendarView } from "./components/CalendarView";
 import { CountyPopup } from "./components/CountyPopup";
 import { TaiwanMap } from "./components/TaiwanMap";
+import { TutorialVideos } from "./components/TutorialVideos";
 import { fireDanceEvents } from "./data/events";
 
 function App() {
-  const [activeView, setActiveView] = useState<"map" | "calendar">("map");
+  const [activeView, setActiveView] = useState<"map" | "calendar" | "tutorials">("map");
   const [activeCounty, setActiveCounty] = useState<string | null>(null);
   const [selectedCounty, setSelectedCounty] = useState<string | null>(null);
 
@@ -61,6 +62,15 @@ function App() {
           >
             成發日曆
           </button>
+          <button
+            className={activeView === "tutorials" ? "view-tab is-active" : "view-tab"}
+            type="button"
+            role="tab"
+            aria-selected={activeView === "tutorials"}
+            onClick={() => setActiveView("tutorials")}
+          >
+            教學影片
+          </button>
         </div>
 
         {activeView === "map" ? (
@@ -91,9 +101,13 @@ function App() {
               onClose={() => setSelectedCounty(null)}
             />
           </div>
-        ) : (
+        ) : activeView === "calendar" ? (
           <div role="tabpanel" aria-label="成發日曆">
             <CalendarView />
+          </div>
+        ) : (
+          <div role="tabpanel" aria-label="教學影片">
+            <TutorialVideos />
           </div>
         )}
       </section>

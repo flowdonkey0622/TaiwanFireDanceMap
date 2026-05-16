@@ -8,8 +8,9 @@
 - 使用 `public/flow-donkey-logo-circle.png` 作為網站品牌 Logo 與 favicon
 - 低成本立體視覺：SVG 陰影、底層偏移與 hover 位移
 - 點擊縣市顯示活動數量、近期活動、日期、地點與連結
-- 地圖 / 成發日曆分頁切換
+- 地圖 / 成發日曆 / 教學影片分頁切換
 - 參考 Fire & Flow Donkey 日曆視覺的 2026 年 5、6 月活動月曆
+- 依 Poi、流星、短棍分類嵌入 YouTube 教學播放清單
 - 無活動資料的縣市提供穩定 fallback 內容
 - 支援鍵盤操作：縣市 path 可用 `Tab` 聚焦，按 `Enter` 或空白鍵選取
 - 響應式版面，桌面與手機寬度皆可操作
@@ -93,6 +94,44 @@ src/data/calendarEvents.ts
 
 目前日曆畫面先整理 2026 年 5 月與 6 月的成發活動。若要新增月份，可在 `CalendarView.tsx` 的 `months` 陣列加入新的年月。
 
+## 教學影片資料維護
+
+教學影片播放清單資料位於：
+
+```text
+src/data/tutorialPlaylists.ts
+```
+
+目前網站使用 YouTube playlist embed，因此不需要逐支新增影片。只要 YouTube 播放清單本身有新增、刪除或排序影片，網站中的嵌入播放器會跟著更新。
+
+每筆播放清單資料包含：
+
+- `id`：唯一分類 ID，例如 `poi`
+- `title`：頁面上顯示的分類名稱
+- `description`：分類簡介
+- `playlistId`：YouTube playlist ID
+- `accent`：卡片左側色條，可用 `ember`、`sky`、`sun`
+
+從 YouTube 播放清單網址取得 `playlistId` 的方式：
+
+```text
+https://youtube.com/playlist?list=PLtwryFmhqGCN4RSPoFJSB-lTwYDHzrXz3
+                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                  這段就是 playlistId
+```
+
+新增分類範例：
+
+```ts
+{
+  id: "fan",
+  title: "火扇教學",
+  description: "火扇基礎手位、開合與流動練習播放清單。",
+  playlistId: "你的 YouTube playlist ID",
+  accent: "ember",
+}
+```
+
 ## 地圖資料
 
 縣市邊界資料放在：
@@ -111,10 +150,12 @@ src/
     CalendarView.tsx
     CountyPopup.tsx
     TaiwanMap.tsx
+    TutorialVideos.tsx
   data/
     calendarEvents.ts
     events.ts
     taiwan-counties.topo.json
+    tutorialPlaylists.ts
   styles/
     global.css
   App.tsx
