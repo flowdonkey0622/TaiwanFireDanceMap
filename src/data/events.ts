@@ -219,7 +219,7 @@ export const fireDanceEvents: FireDanceEvent[] = [
     link: "https://www.instagram.com/ntu_ntust_ntnu_fd/",
   },
   {
-    id: "ntu-ntust-ntnu-fd-2026-recital",
+    id: "cgu-light-fire-2026-recital",
     county: "桃園市",
     title: "長庚大學光火藝術社成果發表會",
     date: "2026-05-26",

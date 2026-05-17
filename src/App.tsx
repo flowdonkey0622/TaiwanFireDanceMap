@@ -42,7 +42,7 @@ function App() {
             </div>
           </div>
           <p className="eyebrow">Fire Dance Taiwan</p>
-          <h1>台灣火舞活動地圖</h1>
+          <h1>台灣火舞地圖＆資料庫</h1>
           <p>
             透過互動式台灣縣市地圖快速查看各地火舞工作坊、交流 Jam、演出與節慶資訊。
           </p>

@@ -1,6 +1,7 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { logoUrl } from "../assets";
+import { eventTypeLabels } from "../data/events";
 import { counties, taiwanRegions } from "../data/taiwanRegions";
 import { isSupabaseConfigured, supabase } from "../lib/supabase";
 import {
@@ -11,7 +12,19 @@ import {
   type ClubInput,
   type ClubStatus,
 } from "../services/clubs";
+import {
+  archiveEvent,
+  createEvent,
+  getManagedEvents,
+  updateEvent,
+  type EventInput,
+  type EventStatus,
+  type EventType,
+  type ManagedEvent,
+} from "../services/events";
 import type { FireDanceClub } from "../types";
+
+type AdminSection = "clubs" | "events";
 
 const emptyClubForm: ClubInput = {
   schoolName: "",
@@ -23,7 +36,21 @@ const emptyClubForm: ClubInput = {
   status: "draft",
 };
 
-function toFormState(club: FireDanceClub): ClubInput {
+const emptyEventForm: EventInput = {
+  title: "",
+  eventDate: "",
+  county: "臺北市",
+  venue: "",
+  type: "performance",
+  summary: "",
+  link: "",
+  status: "draft",
+  slug: "",
+  calendarTitle: "",
+  calendarTone: "",
+};
+
+function toClubFormState(club: FireDanceClub): ClubInput {
   return {
     schoolName: club.schoolName,
     clubName: club.clubName,
@@ -35,7 +62,23 @@ function toFormState(club: FireDanceClub): ClubInput {
   };
 }
 
-function statusLabel(status: ClubStatus | undefined): string {
+function toEventFormState(event: ManagedEvent): EventInput {
+  return {
+    title: event.title,
+    eventDate: event.date,
+    county: event.county,
+    venue: event.venue,
+    type: event.type,
+    summary: event.summary,
+    link: event.link,
+    status: event.status,
+    slug: event.slug ?? "",
+    calendarTitle: event.calendarTitle ?? "",
+    calendarTone: event.calendarTone ?? "",
+  };
+}
+
+function statusLabel(status: ClubStatus | EventStatus | undefined): string {
   if (status === "published") {
     return "已發布";
   }
@@ -48,12 +91,16 @@ function statusLabel(status: ClubStatus | undefined): string {
 }
 
 export function AdminApp() {
+  const [activeSection, setActiveSection] = useState<AdminSection>("clubs");
   const [session, setSession] = useState<Session | null>(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [clubs, setClubs] = useState<FireDanceClub[]>([]);
+  const [events, setEvents] = useState<ManagedEvent[]>([]);
   const [selectedClubId, setSelectedClubId] = useState<string | null>(null);
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [formState, setFormState] = useState<ClubInput>(emptyClubForm);
+  const [eventFormState, setEventFormState] = useState<EventInput>(emptyEventForm);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState("");
@@ -63,8 +110,13 @@ export function AdminApp() {
     () => clubs.find((club) => club.id === selectedClubId) ?? null,
     [clubs, selectedClubId],
   );
+  const selectedEvent = useMemo(
+    () => events.find((event) => event.id === selectedEventId) ?? null,
+    [events, selectedEventId],
+  );
   // While creating, existing club buttons stay disabled so unsaved form input is not lost.
   const isCreatingClub = selectedClubId === null;
+  const isCreatingEvent = selectedEventId === null;
   const clubsByRegion = useMemo(
     () =>
       taiwanRegions
@@ -75,6 +127,7 @@ export function AdminApp() {
         .filter((region) => region.clubs.length > 0),
     [clubs],
   );
+  const adminTitle = activeSection === "clubs" ? "社團資料後台" : "活動資料後台";
 
   useEffect(() => {
     if (!supabase) {
@@ -105,11 +158,16 @@ export function AdminApp() {
   useEffect(() => {
     if (!session) {
       setClubs([]);
+      setEvents([]);
       return;
     }
 
-    loadClubs();
-  }, [session]);
+    if (activeSection === "clubs") {
+      loadClubs();
+    } else {
+      loadEvents();
+    }
+  }, [session, activeSection]);
 
   async function loadClubs() {
     setErrorMessage("");
@@ -120,6 +178,19 @@ export function AdminApp() {
     } catch (error) {
       setErrorMessage(
         error instanceof Error ? error.message : "社團資料讀取失敗。",
+      );
+    }
+  }
+
+  async function loadEvents() {
+    setErrorMessage("");
+
+    try {
+      const nextEvents = await getManagedEvents();
+      setEvents(nextEvents);
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error ? error.message : "活動資料讀取失敗。",
       );
     }
   }
@@ -154,8 +225,16 @@ export function AdminApp() {
 
     await supabase.auth.signOut();
     setSelectedClubId(null);
+    setSelectedEventId(null);
     setFormState(emptyClubForm);
+    setEventFormState(emptyEventForm);
     setMessage("");
+  }
+
+  function handleSelectSection(section: AdminSection) {
+    setActiveSection(section);
+    setMessage("");
+    setErrorMessage("");
   }
 
   function handleSelectClub(club: FireDanceClub) {
@@ -164,7 +243,7 @@ export function AdminApp() {
     }
 
     setSelectedClubId(club.id);
-    setFormState(toFormState(club));
+    setFormState(toClubFormState(club));
     setMessage("");
     setErrorMessage("");
   }
@@ -179,7 +258,33 @@ export function AdminApp() {
   function handleCancelNewClub() {
     const firstClub = clubs[0] ?? null;
     setSelectedClubId(firstClub?.id ?? null);
-    setFormState(firstClub ? toFormState(firstClub) : emptyClubForm);
+    setFormState(firstClub ? toClubFormState(firstClub) : emptyClubForm);
+    setMessage("");
+    setErrorMessage("");
+  }
+
+  function handleSelectEvent(event: ManagedEvent) {
+    if (isCreatingEvent) {
+      return;
+    }
+
+    setSelectedEventId(event.id);
+    setEventFormState(toEventFormState(event));
+    setMessage("");
+    setErrorMessage("");
+  }
+
+  function handleNewEvent() {
+    setSelectedEventId(null);
+    setEventFormState(emptyEventForm);
+    setMessage("");
+    setErrorMessage("");
+  }
+
+  function handleCancelNewEvent() {
+    const firstEvent = events[0] ?? null;
+    setSelectedEventId(firstEvent?.id ?? null);
+    setEventFormState(firstEvent ? toEventFormState(firstEvent) : emptyEventForm);
     setMessage("");
     setErrorMessage("");
   }
@@ -224,6 +329,51 @@ export function AdminApp() {
       setMessage("社團資料已封存。");
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "社團資料封存失敗。");
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  async function handleSaveEvent(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setIsSaving(true);
+    setMessage("");
+    setErrorMessage("");
+
+    try {
+      if (selectedEventId) {
+        await updateEvent(selectedEventId, eventFormState);
+        setMessage("活動資料已更新。");
+      } else {
+        await createEvent(eventFormState);
+        setMessage("活動資料已新增。");
+      }
+
+      await loadEvents();
+      handleNewEvent();
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : "活動資料儲存失敗。");
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  async function handleArchiveEvent() {
+    if (!selectedEventId) {
+      return;
+    }
+
+    setIsSaving(true);
+    setMessage("");
+    setErrorMessage("");
+
+    try {
+      await archiveEvent(selectedEventId);
+      await loadEvents();
+      handleNewEvent();
+      setMessage("活動資料已封存。");
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : "活動資料封存失敗。");
     } finally {
       setIsSaving(false);
     }
@@ -297,163 +447,385 @@ export function AdminApp() {
       <header className="admin-header">
         <div>
           <p className="eyebrow">Admin</p>
-          <h1>社團資料後台</h1>
+          <h1>{adminTitle}</h1>
         </div>
         <button className="admin-secondary-button" type="button" onClick={handleLogout}>
           登出
         </button>
       </header>
 
+      <nav className="admin-section-tabs" aria-label="後台管理分類">
+        <button
+          className={activeSection === "clubs" ? "is-active" : ""}
+          type="button"
+          onClick={() => handleSelectSection("clubs")}
+        >
+          社團
+        </button>
+        <button
+          className={activeSection === "events" ? "is-active" : ""}
+          type="button"
+          onClick={() => handleSelectSection("events")}
+        >
+          活動
+        </button>
+      </nav>
+
       <div className="admin-layout">
-        <section className="admin-card">
-          <div className="admin-card__title">
-            <h2>社團列表</h2>
-            <button type="button" onClick={handleNewClub} disabled={isCreatingClub}>
-              新增社團
-            </button>
-          </div>
-          <div className="admin-list">
-            {clubsByRegion.map((region) => (
-              <div className="admin-list-region" key={region.label}>
-                <h3>{region.label}</h3>
-                {region.clubs.map((club) => (
+        {activeSection === "clubs" ? (
+          <>
+            <section className="admin-card">
+              <div className="admin-card__title">
+                <h2>社團列表</h2>
+                <button type="button" onClick={handleNewClub} disabled={isCreatingClub}>
+                  新增社團
+                </button>
+              </div>
+              <div className="admin-list">
+                {clubsByRegion.map((region) => (
+                  <div className="admin-list-region" key={region.label}>
+                    <h3>{region.label}</h3>
+                    {region.clubs.map((club) => (
+                      <button
+                        className={
+                          selectedClub?.id === club.id
+                            ? "admin-list-item is-active"
+                            : "admin-list-item"
+                        }
+                        type="button"
+                        key={club.id}
+                        onClick={() => handleSelectClub(club)}
+                        disabled={isCreatingClub}
+                      >
+                        <span>{club.clubName}</span>
+                        <small>
+                          {club.county} / {statusLabel(club.status)}
+                        </small>
+                      </button>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            <section className="admin-card">
+              <h2>{selectedClub ? "編輯社團" : "新增社團"}</h2>
+              <form className="admin-form" onSubmit={handleSaveClub}>
+                <label>
+                  社團名稱
+                  <input
+                    value={formState.clubName}
+                    onChange={(event) =>
+                      setFormState({ ...formState, clubName: event.target.value })
+                    }
+                    required
+                  />
+                </label>
+                <label>
+                  學校名稱
+                  <input
+                    value={formState.schoolName}
+                    onChange={(event) =>
+                      setFormState({ ...formState, schoolName: event.target.value })
+                    }
+                    required
+                  />
+                </label>
+                <label>
+                  縣市
+                  <select
+                    value={formState.county}
+                    onChange={(event) =>
+                      setFormState({ ...formState, county: event.target.value })
+                    }
+                    required
+                  >
+                    {counties.map((county) => (
+                      <option value={county} key={county}>
+                        {county}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  簡介
+                  <textarea
+                    rows={4}
+                    value={formState.summary}
+                    onChange={(event) =>
+                      setFormState({ ...formState, summary: event.target.value })
+                    }
+                  />
+                </label>
+                <label>
+                  Instagram URL
+                  <input
+                    type="url"
+                    value={formState.instagramUrl}
+                    onChange={(event) =>
+                      setFormState({ ...formState, instagramUrl: event.target.value })
+                    }
+                  />
+                </label>
+                <label>
+                  YouTube 頻道 URL
+                  <input
+                    type="url"
+                    value={formState.youtubeUrl}
+                    onChange={(event) =>
+                      setFormState({ ...formState, youtubeUrl: event.target.value })
+                    }
+                  />
+                </label>
+                <label>
+                  狀態
+                  <select
+                    value={formState.status}
+                    onChange={(event) =>
+                      setFormState({
+                        ...formState,
+                        status: event.target.value as ClubStatus,
+                      })
+                    }
+                  >
+                    <option value="draft">草稿</option>
+                    <option value="published">發布</option>
+                    <option value="archived">封存</option>
+                  </select>
+                </label>
+
+                {message ? <p className="admin-success">{message}</p> : null}
+                {errorMessage ? <p className="admin-error">{errorMessage}</p> : null}
+
+                <div className="admin-actions">
+                  <button type="submit" disabled={isSaving}>
+                    {isSaving ? "儲存中" : "儲存"}
+                  </button>
+                  {selectedClubId ? (
+                    <button
+                      className="admin-secondary-button"
+                      type="button"
+                      onClick={handleArchiveClub}
+                      disabled={isSaving}
+                    >
+                      封存
+                    </button>
+                  ) : (
+                    <button
+                      className="admin-secondary-button"
+                      type="button"
+                      onClick={handleCancelNewClub}
+                      disabled={isSaving}
+                    >
+                      取消新增
+                    </button>
+                  )}
+                </div>
+              </form>
+            </section>
+          </>
+        ) : (
+          <>
+            <section className="admin-card">
+              <div className="admin-card__title">
+                <h2>活動列表</h2>
+                <button type="button" onClick={handleNewEvent} disabled={isCreatingEvent}>
+                  新增活動
+                </button>
+              </div>
+              <div className="admin-list">
+                {events.map((event) => (
                   <button
                     className={
-                      selectedClub?.id === club.id
+                      selectedEvent?.id === event.id
                         ? "admin-list-item is-active"
                         : "admin-list-item"
                     }
                     type="button"
-                    key={club.id}
-                    onClick={() => handleSelectClub(club)}
-                    disabled={isCreatingClub}
+                    key={event.id}
+                    onClick={() => handleSelectEvent(event)}
+                    disabled={isCreatingEvent}
                   >
-                    <span>{club.clubName}</span>
+                    <span>{event.title}</span>
                     <small>
-                      {club.county} / {statusLabel(club.status)}
+                      {event.date} / {event.county} / {statusLabel(event.status)}
                     </small>
                   </button>
                 ))}
               </div>
-            ))}
-          </div>
-        </section>
+            </section>
 
-        <section className="admin-card">
-          <h2>{selectedClub ? "編輯社團" : "新增社團"}</h2>
-          <form className="admin-form" onSubmit={handleSaveClub}>
-            <label>
-              社團名稱
-              <input
-                value={formState.clubName}
-                onChange={(event) =>
-                  setFormState({ ...formState, clubName: event.target.value })
-                }
-                required
-              />
-            </label>
-            <label>
-              學校名稱
-              <input
-                value={formState.schoolName}
-                onChange={(event) =>
-                  setFormState({ ...formState, schoolName: event.target.value })
-                }
-                required
-              />
-            </label>
-            <label>
-              縣市
-              <select
-                value={formState.county}
-                onChange={(event) =>
-                  setFormState({ ...formState, county: event.target.value })
-                }
-                required
-              >
-                {counties.map((county) => (
-                  <option value={county} key={county}>
-                    {county}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label>
-              簡介
-              <textarea
-                rows={4}
-                value={formState.summary}
-                onChange={(event) =>
-                  setFormState({ ...formState, summary: event.target.value })
-                }
-              />
-            </label>
-            <label>
-              Instagram URL
-              <input
-                type="url"
-                value={formState.instagramUrl}
-                onChange={(event) =>
-                  setFormState({ ...formState, instagramUrl: event.target.value })
-                }
-              />
-            </label>
-            <label>
-              YouTube 頻道 URL
-              <input
-                type="url"
-                value={formState.youtubeUrl}
-                onChange={(event) =>
-                  setFormState({ ...formState, youtubeUrl: event.target.value })
-                }
-              />
-            </label>
-            <label>
-              狀態
-              <select
-                value={formState.status}
-                onChange={(event) =>
-                  setFormState({
-                    ...formState,
-                    status: event.target.value as ClubStatus,
-                  })
-                }
-              >
-                <option value="draft">草稿</option>
-                <option value="published">發布</option>
-                <option value="archived">封存</option>
-              </select>
-            </label>
+            <section className="admin-card">
+              <h2>{selectedEvent ? "編輯活動" : "新增活動"}</h2>
+              <form className="admin-form" onSubmit={handleSaveEvent}>
+                <label>
+                  活動名稱
+                  <input
+                    value={eventFormState.title}
+                    onChange={(event) =>
+                      setEventFormState({ ...eventFormState, title: event.target.value })
+                    }
+                    required
+                  />
+                </label>
+                <label>
+                  活動日期
+                  <input
+                    type="date"
+                    value={eventFormState.eventDate}
+                    onChange={(event) =>
+                      setEventFormState({ ...eventFormState, eventDate: event.target.value })
+                    }
+                    required
+                  />
+                </label>
+                <label>
+                  縣市
+                  <select
+                    value={eventFormState.county}
+                    onChange={(event) =>
+                      setEventFormState({ ...eventFormState, county: event.target.value })
+                    }
+                    required
+                  >
+                    {counties.map((county) => (
+                      <option value={county} key={county}>
+                        {county}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  地點
+                  <input
+                    value={eventFormState.venue}
+                    onChange={(event) =>
+                      setEventFormState({ ...eventFormState, venue: event.target.value })
+                    }
+                    required
+                  />
+                </label>
+                <label>
+                  類型
+                  <select
+                    value={eventFormState.type}
+                    onChange={(event) =>
+                      setEventFormState({
+                        ...eventFormState,
+                        type: event.target.value as EventType,
+                      })
+                    }
+                  >
+                    {Object.entries(eventTypeLabels).map(([value, label]) => (
+                      <option value={value} key={value}>
+                        {label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  簡介
+                  <textarea
+                    rows={4}
+                    value={eventFormState.summary}
+                    onChange={(event) =>
+                      setEventFormState({ ...eventFormState, summary: event.target.value })
+                    }
+                    required
+                  />
+                </label>
+                <label>
+                  活動連結
+                  <input
+                    type="url"
+                    value={eventFormState.link}
+                    onChange={(event) =>
+                      setEventFormState({ ...eventFormState, link: event.target.value })
+                    }
+                    required
+                  />
+                </label>
+                <label>
+                  Slug
+                  <input
+                    value={eventFormState.slug}
+                    onChange={(event) =>
+                      setEventFormState({ ...eventFormState, slug: event.target.value })
+                    }
+                  />
+                </label>
+                <label>
+                  日曆短標題
+                  <input
+                    value={eventFormState.calendarTitle}
+                    onChange={(event) =>
+                      setEventFormState({
+                        ...eventFormState,
+                        calendarTitle: event.target.value,
+                      })
+                    }
+                  />
+                </label>
+                <label>
+                  日曆色調
+                  <input
+                    value={eventFormState.calendarTone}
+                    onChange={(event) =>
+                      setEventFormState({
+                        ...eventFormState,
+                        calendarTone: event.target.value,
+                      })
+                    }
+                  />
+                </label>
+                <label>
+                  狀態
+                  <select
+                    value={eventFormState.status}
+                    onChange={(event) =>
+                      setEventFormState({
+                        ...eventFormState,
+                        status: event.target.value as EventStatus,
+                      })
+                    }
+                  >
+                    <option value="draft">草稿</option>
+                    <option value="published">發布</option>
+                    <option value="archived">封存</option>
+                  </select>
+                </label>
 
-            {message ? <p className="admin-success">{message}</p> : null}
-            {errorMessage ? <p className="admin-error">{errorMessage}</p> : null}
+                {message ? <p className="admin-success">{message}</p> : null}
+                {errorMessage ? <p className="admin-error">{errorMessage}</p> : null}
 
-            <div className="admin-actions">
-              <button type="submit" disabled={isSaving}>
-                {isSaving ? "儲存中" : "儲存"}
-              </button>
-              {selectedClubId ? (
-                <button
-                  className="admin-secondary-button"
-                  type="button"
-                  onClick={handleArchiveClub}
-                  disabled={isSaving}
-                >
-                  封存
-                </button>
-              ) : (
-                <button
-                  className="admin-secondary-button"
-                  type="button"
-                  onClick={handleCancelNewClub}
-                  disabled={isSaving}
-                >
-                  取消新增
-                </button>
-              )}
-            </div>
-          </form>
-        </section>
+                <div className="admin-actions">
+                  <button type="submit" disabled={isSaving}>
+                    {isSaving ? "儲存中" : "儲存"}
+                  </button>
+                  {selectedEventId ? (
+                    <button
+                      className="admin-secondary-button"
+                      type="button"
+                      onClick={handleArchiveEvent}
+                      disabled={isSaving}
+                    >
+                      封存
+                    </button>
+                  ) : (
+                    <button
+                      className="admin-secondary-button"
+                      type="button"
+                      onClick={handleCancelNewEvent}
+                      disabled={isSaving}
+                    >
+                      取消新增
+                    </button>
+                  )}
+                </div>
+              </form>
+            </section>
+          </>
+        )}
       </div>
     </main>
   );

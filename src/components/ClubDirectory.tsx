@@ -3,6 +3,7 @@ import { getCountyOrder, taiwanRegions } from "../data/taiwanRegions";
 import { isSupabaseConfigured } from "../lib/supabase";
 import { getPublishedClubs } from "../services/clubs";
 import type { FireDanceClub } from "../types";
+import { ClubLocationMap } from "./ClubLocationMap";
 
 type LoadState = "idle" | "loading" | "success" | "error";
 
@@ -67,7 +68,6 @@ export function ClubDirectory() {
         .filter((region) => region.clubs.length > 0),
     [clubs],
   );
-
   // Region toggles keep the list scannable after clubs grow across multiple areas.
   function toggleRegion(regionLabel: string) {
     setOpenRegions({
@@ -99,50 +99,53 @@ export function ClubDirectory() {
           <p>目前沒有已發布的社團資料。</p>
         </div>
       ) : (
-        <div className="club-groups">
-          {clubsByRegion.map((region) => (
-            <section
-              className="club-group"
-              key={region.label}
-              aria-labelledby={`club-${region.label}`}
-            >
-              <button
-                className="club-group__toggle"
-                type="button"
-                onClick={() => toggleRegion(region.label)}
-                aria-expanded={openRegions[region.label]}
+        <>
+          <ClubLocationMap clubs={clubs} />
+          <div className="club-groups">
+            {clubsByRegion.map((region) => (
+              <section
+                className="club-group"
+                key={region.label}
+                aria-labelledby={`club-${region.label}`}
               >
-                <span id={`club-${region.label}`}>{region.label}</span>
-                <span>{openRegions[region.label] ? "收合" : "展開"}</span>
-              </button>
-              {openRegions[region.label] ? (
-                <div className="club-grid">
-                  {region.clubs.map((club) => (
-                    <article className="club-card" key={club.id}>
-                      <div>
-                        <p className="eyebrow">{club.schoolName}</p>
-                        <h4>{club.clubName}</h4>
-                        {club.summary ? <p>{club.summary}</p> : null}
-                      </div>
-                      <div className="club-card__links">
-                        {club.instagramUrl ? (
-                          <a href={club.instagramUrl} target="_blank" rel="noreferrer">
-                            Instagram
-                          </a>
-                        ) : null}
-                        {club.youtubeUrl ? (
-                          <a href={club.youtubeUrl} target="_blank" rel="noreferrer">
-                            YouTube
-                          </a>
-                        ) : null}
-                      </div>
-                    </article>
-                  ))}
-                </div>
-              ) : null}
-            </section>
-          ))}
-        </div>
+                <button
+                  className="club-group__toggle"
+                  type="button"
+                  onClick={() => toggleRegion(region.label)}
+                  aria-expanded={openRegions[region.label]}
+                >
+                  <span id={`club-${region.label}`}>{region.label}</span>
+                  <span>{openRegions[region.label] ? "收合" : "展開"}</span>
+                </button>
+                {openRegions[region.label] ? (
+                  <div className="club-grid">
+                    {region.clubs.map((club) => (
+                      <article className="club-card" key={club.id}>
+                        <div>
+                          <p className="eyebrow">{club.schoolName}</p>
+                          <h4>{club.clubName}</h4>
+                          {club.summary ? <p>{club.summary}</p> : null}
+                        </div>
+                        <div className="club-card__links">
+                          {club.instagramUrl ? (
+                            <a href={club.instagramUrl} target="_blank" rel="noreferrer">
+                              Instagram
+                            </a>
+                          ) : null}
+                          {club.youtubeUrl ? (
+                            <a href={club.youtubeUrl} target="_blank" rel="noreferrer">
+                              YouTube
+                            </a>
+                          ) : null}
+                        </div>
+                      </article>
+                    ))}
+                  </div>
+                ) : null}
+              </section>
+            ))}
+          </div>
+        </>
       )}
     </section>
   );
