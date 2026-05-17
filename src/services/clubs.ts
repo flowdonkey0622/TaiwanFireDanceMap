@@ -24,6 +24,43 @@ type ClubRow = {
   status?: ClubStatus;
 };
 
+const clubStatuses: ClubStatus[] = ["draft", "published", "archived"];
+
+function isClubStatus(status: unknown): status is ClubStatus {
+  return clubStatuses.includes(status as ClubStatus);
+}
+
+function getSafeExternalUrl(url: string | null): string | null {
+  if (!url) {
+    return null;
+  }
+
+  const trimmedUrl = url.trim();
+
+  if (!trimmedUrl) {
+    return null;
+  }
+
+  try {
+    const parsedUrl = new URL(trimmedUrl);
+    return parsedUrl.protocol === "https:" || parsedUrl.protocol === "http:"
+      ? parsedUrl.toString()
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+function getInputExternalUrl(url: string, label: string): string | null {
+  const safeUrl = getSafeExternalUrl(url);
+
+  if (url.trim() && !safeUrl) {
+    throw new Error(`${label} 只允許 http 或 https URL。`);
+  }
+
+  return safeUrl;
+}
+
 // Keep database column mapping isolated here so UI components can use camelCase.
 function toFireDanceClub(row: ClubRow): FireDanceClub {
   return {
@@ -32,20 +69,24 @@ function toFireDanceClub(row: ClubRow): FireDanceClub {
     clubName: row.club_name,
     county: row.county,
     summary: row.summary,
-    instagramUrl: row.instagram_url,
-    youtubeUrl: row.youtube_url,
-    status: row.status,
+    instagramUrl: getSafeExternalUrl(row.instagram_url),
+    youtubeUrl: getSafeExternalUrl(row.youtube_url),
+    status: isClubStatus(row.status) ? row.status : undefined,
   };
 }
 
 function toClubRow(input: ClubInput) {
+  if (!isClubStatus(input.status)) {
+    throw new Error("社團狀態不正確。");
+  }
+
   return {
     school_name: input.schoolName.trim(),
     club_name: input.clubName.trim(),
     county: input.county.trim(),
     summary: input.summary.trim(),
-    instagram_url: input.instagramUrl.trim() || null,
-    youtube_url: input.youtubeUrl.trim() || null,
+    instagram_url: getInputExternalUrl(input.instagramUrl, "Instagram URL"),
+    youtube_url: getInputExternalUrl(input.youtubeUrl, "YouTube URL"),
     status: input.status,
   };
 }

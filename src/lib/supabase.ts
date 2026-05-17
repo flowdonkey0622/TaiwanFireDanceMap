@@ -30,7 +30,13 @@ function isValidSupabaseUrl(url: string | undefined): url is string {
 
   try {
     const parsedUrl = new URL(url);
-    return parsedUrl.protocol === "https:" || parsedUrl.protocol === "http:";
+    const isLocalHost = ["localhost", "127.0.0.1", "::1"].includes(
+      parsedUrl.hostname,
+    );
+    return (
+      parsedUrl.protocol === "https:" ||
+      (parsedUrl.protocol === "http:" && isLocalHost)
+    );
   } catch {
     return false;
   }
