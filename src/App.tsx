@@ -14,6 +14,7 @@ import type { FireDanceEvent } from "./types";
 type LoadState = "idle" | "loading" | "success" | "error";
 
 function App() {
+  const copyrightYear = new Date().getFullYear();
   const [activeView, setActiveView] = useState<
     "map" | "calendar" | "tutorials" | "clubs" | "articles"
   >("map");
@@ -206,6 +207,32 @@ function App() {
           </div>
         )}
       </section>
+      <footer className="site-footer">
+        <div className="site-footer__links" aria-label="Fire & Flow Donkey 社群連結">
+          <a href="https://discord.gg/sDPXt8kupS" target="_blank" rel="noreferrer">
+            Discord
+          </a>
+          <a
+            href="https://www.youtube.com/@TaiwanFlowDonkey"
+            target="_blank"
+            rel="noreferrer"
+          >
+            YouTube
+          </a>
+          <a
+            href="https://x.com/flow_donkey0622?t=TWKDYw_NCEKRR_-m6AProw&amp;s=09"
+            target="_blank"
+            rel="noreferrer"
+          >
+            X
+          </a>
+          <a href="https://www.instagram.com/flowdonkey0622/" target="_blank" rel="noreferrer">
+            Instagram
+          </a>
+        </div>
+        <p>此網頁透過 Codex 協助製作。</p>
+        <p>Copyright © {copyrightYear} Fire &amp; Flow Donkey. All rights reserved.</p>
+      </footer>
     </main>
   );
 }
