@@ -43,8 +43,9 @@ function App() {
         }
       } catch (error) {
         if (isMounted) {
+          console.error(error);
           setEventsLoadState("error");
-          setEventsErrorMessage(error instanceof Error ? error.message : "活動資料讀取失敗。");
+          setEventsErrorMessage("活動資料讀取失敗，請稍後再試。");
         }
       }
     }

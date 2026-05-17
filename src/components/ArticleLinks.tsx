@@ -34,7 +34,7 @@ export function ArticleLinks() {
             </div>
 
             {/* 文章預覽採手動資料，外部連結只負責導到原文。 */}
-            <a href={article.url} target="_blank" rel="noreferrer">
+            <a href={article.url} target="_blank" rel="noopener noreferrer">
               閱讀文章
             </a>
           </article>

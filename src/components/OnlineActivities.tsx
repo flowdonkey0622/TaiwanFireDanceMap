@@ -29,7 +29,7 @@ export function OnlineActivities() {
               <a
                 href={activity.primaryLink.url}
                 target="_blank"
-                rel="noreferrer"
+                rel="noopener noreferrer"
               >
                 {activity.primaryLink.label}
               </a>
@@ -37,7 +37,7 @@ export function OnlineActivities() {
                 <a
                   href={activity.secondaryLink.url}
                   target="_blank"
-                  rel="noreferrer"
+                  rel="noopener noreferrer"
                 >
                   {activity.secondaryLink.label}
                 </a>

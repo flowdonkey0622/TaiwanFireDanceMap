@@ -34,7 +34,7 @@ export function TutorialVideos() {
               <a
                 href={`https://www.youtube.com/playlist?list=${playlist.playlistId}`}
                 target="_blank"
-                rel="noreferrer"
+                rel="noopener noreferrer"
               >
                 開啟播放清單
               </a>

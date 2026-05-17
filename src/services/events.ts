@@ -46,6 +46,16 @@ type EventRow = {
 const eventStatuses: EventStatus[] = ["draft", "published", "archived"];
 const eventTypes: EventType[] = ["workshop", "jam", "performance", "festival"];
 
+function getTrimmedText(value: string, label: string, maxLength: number): string {
+  const trimmedValue = value.trim();
+
+  if (trimmedValue.length > maxLength) {
+    throw new Error(`${label} 最多 ${maxLength} 個字。`);
+  }
+
+  return trimmedValue;
+}
+
 function isEventStatus(status: unknown): status is EventStatus {
   return eventStatuses.includes(status as EventStatus);
 }
@@ -103,7 +113,7 @@ function toManagedEvent(row: EventRow): ManagedEvent {
     venue: row.venue,
     type: isEventType(row.type) ? row.type : "performance",
     summary: row.summary,
-    link: getSafeExternalUrl(row.link) ?? row.link,
+    link: getSafeExternalUrl(row.link) ?? "",
     clubId: row.club_id,
     clubName: getJoinedClubName(row.clubs),
     status: isEventStatus(row.status) ? row.status : "draft",
@@ -123,18 +133,18 @@ function toEventRow(input: EventInput) {
   }
 
   return {
-    title: input.title.trim(),
+    title: getTrimmedText(input.title, "活動名稱", 160),
     event_date: input.eventDate,
-    county: input.county.trim(),
-    venue: input.venue.trim(),
+    county: getTrimmedText(input.county, "縣市", 32),
+    venue: getTrimmedText(input.venue, "地點", 160),
     type: input.type,
-    summary: input.summary.trim(),
+    summary: getTrimmedText(input.summary, "簡介", 2000),
     link: getInputExternalUrl(input.link, "活動連結"),
     status: input.status,
     club_id: input.clubId || null,
-    slug: input.slug.trim() || null,
-    calendar_title: input.calendarTitle.trim() || null,
-    calendar_tone: input.calendarTone.trim() || null,
+    slug: getTrimmedText(input.slug, "Slug", 120) || null,
+    calendar_title: getTrimmedText(input.calendarTitle, "日曆短標題", 80) || null,
+    calendar_tone: getTrimmedText(input.calendarTone, "日曆色調", 32) || null,
   };
 }
 

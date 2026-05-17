@@ -39,8 +39,9 @@ export function ClubDirectory() {
         }
       } catch (error) {
         if (isMounted) {
+          console.error(error);
           setLoadState("error");
-          setErrorMessage(error instanceof Error ? error.message : "社團資料讀取失敗。");
+          setErrorMessage("社團資料讀取失敗，請稍後再試。");
         }
       }
     }
@@ -128,12 +129,12 @@ export function ClubDirectory() {
                         </div>
                         <div className="club-card__links">
                           {club.instagramUrl ? (
-                            <a href={club.instagramUrl} target="_blank" rel="noreferrer">
+                            <a href={club.instagramUrl} target="_blank" rel="noopener noreferrer">
                               Instagram
                             </a>
                           ) : null}
                           {club.youtubeUrl ? (
-                            <a href={club.youtubeUrl} target="_blank" rel="noreferrer">
+                            <a href={club.youtubeUrl} target="_blank" rel="noopener noreferrer">
                               YouTube
                             </a>
                           ) : null}

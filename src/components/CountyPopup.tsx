@@ -50,9 +50,11 @@ export function CountyPopup({ countyName, events, onClose }: CountyPopupProps) {
               <h3>{event.title}</h3>
               <p className="event-card__venue">{event.venue}</p>
               <p className="event-card__summary">{event.summary}</p>
-              <a href={event.link} target="_blank" rel="noreferrer">
-                查看活動
-              </a>
+              {event.link ? (
+                <a href={event.link} target="_blank" rel="noopener noreferrer">
+                  查看活動
+                </a>
+              ) : null}
             </li>
           ))}
         </ul>

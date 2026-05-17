@@ -26,6 +26,16 @@ type ClubRow = {
 
 const clubStatuses: ClubStatus[] = ["draft", "published", "archived"];
 
+function getTrimmedText(value: string, label: string, maxLength: number): string {
+  const trimmedValue = value.trim();
+
+  if (trimmedValue.length > maxLength) {
+    throw new Error(`${label} 最多 ${maxLength} 個字。`);
+  }
+
+  return trimmedValue;
+}
+
 function isClubStatus(status: unknown): status is ClubStatus {
   return clubStatuses.includes(status as ClubStatus);
 }
@@ -81,10 +91,10 @@ function toClubRow(input: ClubInput) {
   }
 
   return {
-    school_name: input.schoolName.trim(),
-    club_name: input.clubName.trim(),
-    county: input.county.trim(),
-    summary: input.summary.trim(),
+    school_name: getTrimmedText(input.schoolName, "學校名稱", 120),
+    club_name: getTrimmedText(input.clubName, "社團名稱", 120),
+    county: getTrimmedText(input.county, "縣市", 32),
+    summary: getTrimmedText(input.summary, "簡介", 2000),
     instagram_url: getInputExternalUrl(input.instagramUrl, "Instagram URL"),
     youtube_url: getInputExternalUrl(input.youtubeUrl, "YouTube URL"),
     status: input.status,
