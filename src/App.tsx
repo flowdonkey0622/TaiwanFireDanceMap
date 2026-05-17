@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { logoUrl } from "./assets";
 import { ArticleLinks } from "./components/ArticleLinks";
 import { CalendarView } from "./components/CalendarView";
@@ -7,7 +7,11 @@ import { CountyPopup } from "./components/CountyPopup";
 import { OnlineActivities } from "./components/OnlineActivities";
 import { TaiwanMap } from "./components/TaiwanMap";
 import { TutorialVideos } from "./components/TutorialVideos";
-import { fireDanceEvents } from "./data/events";
+import { isSupabaseConfigured } from "./lib/supabase";
+import { getPublishedEvents } from "./services/events";
+import type { FireDanceEvent } from "./types";
+
+type LoadState = "idle" | "loading" | "success" | "error";
 
 function App() {
   const [activeView, setActiveView] = useState<
@@ -15,14 +19,50 @@ function App() {
   >("map");
   const [activeCounty, setActiveCounty] = useState<string | null>(null);
   const [selectedCounty, setSelectedCounty] = useState<string | null>(null);
+  const [events, setEvents] = useState<FireDanceEvent[]>([]);
+  const [eventsLoadState, setEventsLoadState] = useState<LoadState>("idle");
+  const [eventsErrorMessage, setEventsErrorMessage] = useState("");
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadEvents() {
+      if (!isSupabaseConfigured) {
+        setEventsLoadState("error");
+        setEventsErrorMessage("尚未設定 Supabase 環境變數。");
+        return;
+      }
+
+      setEventsLoadState("loading");
+
+      try {
+        const nextEvents = await getPublishedEvents();
+        if (isMounted) {
+          setEvents(nextEvents);
+          setEventsLoadState("success");
+        }
+      } catch (error) {
+        if (isMounted) {
+          setEventsLoadState("error");
+          setEventsErrorMessage(error instanceof Error ? error.message : "活動資料讀取失敗。");
+        }
+      }
+    }
+
+    loadEvents();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const eventCounts = useMemo(
     () =>
-      fireDanceEvents.reduce<Record<string, number>>((counts, event) => {
+      events.reduce<Record<string, number>>((counts, event) => {
         counts[event.county] = (counts[event.county] ?? 0) + 1;
         return counts;
       }, {}),
-    [],
+    [events],
   );
 
   const highlightedCounty = activeCounty ?? selectedCounty;
@@ -98,6 +138,15 @@ function App() {
 
         {activeView === "map" ? (
           <div role="tabpanel" aria-label="互動地圖">
+            {eventsLoadState === "loading" ? (
+              <div className="empty-state" role="status">
+                <p>活動資料載入中。</p>
+              </div>
+            ) : eventsLoadState === "error" ? (
+              <div className="empty-state" role="alert">
+                <p>{eventsErrorMessage}</p>
+              </div>
+            ) : null}
             <div className="workspace">
               <div className="map-card">
                 <TaiwanMap
@@ -122,6 +171,7 @@ function App() {
 
               <CountyPopup
                 countyName={selectedCounty}
+                events={events}
                 onClose={() => setSelectedCounty(null)}
               />
             </div>
@@ -129,7 +179,17 @@ function App() {
           </div>
         ) : activeView === "calendar" ? (
           <div role="tabpanel" aria-label="成發日曆">
-            <CalendarView />
+            {eventsLoadState === "loading" ? (
+              <div className="empty-state" role="status">
+                <p>活動資料載入中。</p>
+              </div>
+            ) : eventsLoadState === "error" ? (
+              <div className="empty-state" role="alert">
+                <p>{eventsErrorMessage}</p>
+              </div>
+            ) : (
+              <CalendarView events={events} />
+            )}
           </div>
         ) : activeView === "tutorials" ? (
           <div role="tabpanel" aria-label="教學影片">

@@ -45,6 +45,7 @@ const emptyEventForm: EventInput = {
   summary: "",
   link: "",
   status: "draft",
+  clubId: "",
   slug: "",
   calendarTitle: "",
   calendarTone: "",
@@ -72,6 +73,7 @@ function toEventFormState(event: ManagedEvent): EventInput {
     summary: event.summary,
     link: event.link,
     status: event.status,
+    clubId: event.clubId ?? "",
     slug: event.slug ?? "",
     calendarTitle: event.calendarTitle ?? "",
     calendarTone: event.calendarTone ?? "",
@@ -166,6 +168,7 @@ export function AdminApp() {
       loadClubs();
     } else {
       loadEvents();
+      loadClubs();
     }
   }, [session, activeSection]);
 
@@ -543,6 +546,22 @@ export function AdminApp() {
                     {counties.map((county) => (
                       <option value={county} key={county}>
                         {county}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  連結社團
+                  <select
+                    value={eventFormState.clubId}
+                    onChange={(event) =>
+                      setEventFormState({ ...eventFormState, clubId: event.target.value })
+                    }
+                  >
+                    <option value="">非社團活動</option>
+                    {clubs.map((club) => (
+                      <option value={club.id} key={club.id}>
+                        {club.clubName}
                       </option>
                     ))}
                   </select>

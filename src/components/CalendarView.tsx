@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
-import { calendarEvents, type CalendarEvent } from "../data/calendarEvents";
+import type { CalendarEventTone } from "../data/calendarEvents";
 import { logoUrl } from "../assets";
+import type { FireDanceEvent } from "../types";
 
 type CalendarDay = {
   date: Date;
@@ -49,28 +50,46 @@ function getDayLabel(date: Date, inMonth: boolean, monthIndex: number): string {
   return String(date.getDate());
 }
 
-function eventClassName(event: CalendarEvent): string {
-  return `calendar-event calendar-event--${event.tone}`;
+function isCalendarEventTone(tone: string | null | undefined): tone is CalendarEventTone {
+  return tone === "blue" || tone === "red" || tone === "orange" || tone === "purple";
 }
 
-export function CalendarView() {
+function eventClassName(event: FireDanceEvent): string {
+  const tone = isCalendarEventTone(event.calendarTone) ? event.calendarTone : "blue";
+  return `calendar-event calendar-event--${tone}`;
+}
+
+type CalendarViewProps = {
+  events: FireDanceEvent[];
+};
+
+export function CalendarView({ events }: CalendarViewProps) {
   const [activeMonthIndex, setActiveMonthIndex] = useState(0);
-  const months = [
-    { year: 2026, monthIndex: 4 },
-    { year: 2026, monthIndex: 5 },
-  ];
+  const months = useMemo(() => {
+    const monthKeys = Array.from(
+      new Set(events.map((event) => event.date.slice(0, 7))),
+    ).sort();
+
+    return monthKeys.map((monthKey) => {
+      const [year, month] = monthKey.split("-").map(Number);
+      return { year, monthIndex: month - 1 };
+    });
+  }, [events]);
 
   const eventsByDate = useMemo(
     () =>
-      calendarEvents.reduce<Record<string, CalendarEvent[]>>((groups, event) => {
+      events.reduce<Record<string, FireDanceEvent[]>>((groups, event) => {
         groups[event.date] = [...(groups[event.date] ?? []), event];
         return groups;
       }, {}),
-    [],
+    [events],
   );
 
   const activeMonth = months[activeMonthIndex];
-  const days = getMonthDays(activeMonth.year, activeMonth.monthIndex);
+  const safeActiveMonth = activeMonth ?? months[0];
+  const days = safeActiveMonth
+    ? getMonthDays(safeActiveMonth.year, safeActiveMonth.monthIndex)
+    : [];
 
   const goToPreviousMonth = () => {
     setActiveMonthIndex((current) => Math.max(0, current - 1));
@@ -88,6 +107,11 @@ export function CalendarView() {
         <p>以月曆方式整理火舞社群成發日期，方便快速掌握密集時段與活動分布。</p>
       </div>
 
+      {months.length === 0 ? (
+        <div className="empty-state">
+          <p>目前沒有已發布的活動資料。</p>
+        </div>
+      ) : (
       <div className="calendar-carousel">
         <div className="calendar-controls" aria-label="切換月份">
           <button
@@ -100,7 +124,7 @@ export function CalendarView() {
             ‹
           </button>
           <div className="calendar-position" aria-live="polite">
-            <strong>{activeMonth.year}.{String(activeMonth.monthIndex + 1).padStart(2, "0")}</strong>
+            <strong>{safeActiveMonth.year}.{String(safeActiveMonth.monthIndex + 1).padStart(2, "0")}</strong>
             <span>{activeMonthIndex + 1} / {months.length}</span>
           </div>
           <button
@@ -116,7 +140,7 @@ export function CalendarView() {
 
         <article
           className="calendar-board"
-          key={`${activeMonth.year}-${activeMonth.monthIndex}`}
+          key={`${safeActiveMonth.year}-${safeActiveMonth.monthIndex}`}
         >
           <header className="calendar-board__header">
             <img
@@ -132,8 +156,8 @@ export function CalendarView() {
           </header>
 
           <div className="calendar-board__month">
-            <span>{activeMonth.year}.{String(activeMonth.monthIndex + 1).padStart(2, "0")}</span>
-            <small>({monthNames[activeMonth.monthIndex]})</small>
+            <span>{safeActiveMonth.year}.{String(safeActiveMonth.monthIndex + 1).padStart(2, "0")}</span>
+            <small>({monthNames[safeActiveMonth.monthIndex] ?? safeActiveMonth.monthIndex + 1})</small>
           </div>
 
           <div className="calendar-weekdays" aria-hidden="true">
@@ -152,12 +176,12 @@ export function CalendarView() {
                   key={dateKey}
                 >
                   <span className="calendar-date">
-                    {getDayLabel(day.date, day.inMonth, activeMonth.monthIndex)}
+                    {getDayLabel(day.date, day.inMonth, safeActiveMonth.monthIndex)}
                   </span>
                   <div className="calendar-cell__events">
                     {dayEvents.map((event) => (
                       <span className={eventClassName(event)} key={event.id}>
-                        {event.title}
+                        {event.clubName ?? event.title}
                       </span>
                     ))}
                   </div>
@@ -167,6 +191,7 @@ export function CalendarView() {
           </div>
         </article>
       </div>
+      )}
     </section>
   );
 }

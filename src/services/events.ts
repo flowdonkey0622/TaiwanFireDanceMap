@@ -20,6 +20,7 @@ export type EventInput = {
   summary: string;
   link: string;
   status: EventStatus;
+  clubId: string;
   slug: string;
   calendarTitle: string;
   calendarTone: string;
@@ -35,6 +36,8 @@ type EventRow = {
   summary: string;
   link: string;
   status: string;
+  club_id: string | null;
+  clubs: { club_name: string } | { club_name: string }[] | null;
   slug: string | null;
   calendar_title: string | null;
   calendar_tone: string | null;
@@ -82,6 +85,14 @@ function getInputExternalUrl(url: string, label: string): string {
   return safeUrl;
 }
 
+function getJoinedClubName(clubs: EventRow["clubs"]): string | null {
+  if (Array.isArray(clubs)) {
+    return clubs[0]?.club_name ?? null;
+  }
+
+  return clubs?.club_name ?? null;
+}
+
 // Keep database column mapping isolated here so admin components stay camelCase.
 function toManagedEvent(row: EventRow): ManagedEvent {
   return {
@@ -93,6 +104,8 @@ function toManagedEvent(row: EventRow): ManagedEvent {
     type: isEventType(row.type) ? row.type : "performance",
     summary: row.summary,
     link: getSafeExternalUrl(row.link) ?? row.link,
+    clubId: row.club_id,
+    clubName: getJoinedClubName(row.clubs),
     status: isEventStatus(row.status) ? row.status : "draft",
     slug: row.slug,
     calendarTitle: row.calendar_title,
@@ -118,6 +131,7 @@ function toEventRow(input: EventInput) {
     summary: input.summary.trim(),
     link: getInputExternalUrl(input.link, "活動連結"),
     status: input.status,
+    club_id: input.clubId || null,
     slug: input.slug.trim() || null,
     calendar_title: input.calendarTitle.trim() || null,
     calendar_tone: input.calendarTone.trim() || null,
@@ -132,8 +146,29 @@ export async function getManagedEvents(): Promise<ManagedEvent[]> {
   const { data, error } = await supabase
     .from("events")
     .select(
-      "id, title, event_date, county, venue, type, summary, link, status, slug, calendar_title, calendar_tone",
+      "id, title, event_date, county, venue, type, summary, link, status, club_id, slug, calendar_title, calendar_tone, clubs(club_name)",
     )
+    .order("event_date", { ascending: true })
+    .order("title", { ascending: true });
+
+  if (error) {
+    throw error;
+  }
+
+  return (data ?? []).map(toManagedEvent);
+}
+
+export async function getPublishedEvents(): Promise<FireDanceEvent[]> {
+  if (!supabase) {
+    throw new Error("Supabase environment variables are not configured.");
+  }
+
+  const { data, error } = await supabase
+    .from("events")
+    .select(
+      "id, title, event_date, county, venue, type, summary, link, status, club_id, slug, calendar_title, calendar_tone, clubs(club_name)",
+    )
+    .eq("status", "published")
     .order("event_date", { ascending: true })
     .order("title", { ascending: true });
 

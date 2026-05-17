@@ -1,15 +1,16 @@
 import {
   eventTypeLabels,
   formatEventDate,
-  getEventsByCounty,
 } from "../data/events";
+import type { FireDanceEvent } from "../types";
 
 type CountyPopupProps = {
   countyName: string | null;
+  events: FireDanceEvent[];
   onClose: () => void;
 };
 
-export function CountyPopup({ countyName, onClose }: CountyPopupProps) {
+export function CountyPopup({ countyName, events, onClose }: CountyPopupProps) {
   if (!countyName) {
     return (
       <aside className="county-panel is-empty" aria-live="polite">
@@ -20,7 +21,9 @@ export function CountyPopup({ countyName, onClose }: CountyPopupProps) {
     );
   }
 
-  const events = getEventsByCounty(countyName);
+  const countyEvents = events
+    .filter((event) => event.county === countyName)
+    .sort((a, b) => a.date.localeCompare(b.date));
 
   return (
     <aside className="county-panel" aria-live="polite">
@@ -30,15 +33,15 @@ export function CountyPopup({ countyName, onClose }: CountyPopupProps) {
       </button>
       <p className="eyebrow">縣市活動</p>
       <h2>{countyName}</h2>
-      {events.length > 0 && (
+      {countyEvents.length > 0 && (
         <p className="event-count">
-          目前收錄 {events.length} 筆火舞相關活動
+          目前收錄 {countyEvents.length} 筆火舞相關活動
         </p>
       )}
 
-      {events.length > 0 ? (
+      {countyEvents.length > 0 ? (
         <ul className="event-list">
-          {events.map((event) => (
+          {countyEvents.map((event) => (
             <li key={event.id} className="event-card">
               <div className="event-card__meta">
                 <span>{formatEventDate(event.date)}</span>

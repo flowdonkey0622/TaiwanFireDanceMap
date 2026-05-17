@@ -9,6 +9,9 @@ export type FireDanceEvent = {
   type: "workshop" | "jam" | "performance" | "festival";
   summary: string;
   link: string;
+  clubId?: string | null;
+  clubName?: string | null;
+  calendarTone?: string | null;
 };
 
 export type FireDanceClub = {

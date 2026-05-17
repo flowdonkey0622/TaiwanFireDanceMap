@@ -196,6 +196,8 @@ export function ClubLocationMap({ clubs }: ClubLocationMapProps) {
   const activeClubs = activePopup ? clubsByCounty[activePopup.countyName] ?? [] : [];
 
   function openCountyPopup(countyName: string, event: MouseEvent<SVGPathElement>) {
+    event.stopPropagation();
+
     const countyClubs = clubsByCounty[countyName] ?? [];
 
     if (countyClubs.length === 0) {
@@ -269,7 +271,7 @@ export function ClubLocationMap({ clubs }: ClubLocationMapProps) {
   };
 
   return (
-    <div className="club-location-map">
+    <div className="club-location-map" onClick={() => setActivePopup(null)}>
       <figure className="club-location-map__figure" aria-label="台灣火舞社團分布地圖">
         <svg
           className="club-location-map__svg"
@@ -324,6 +326,7 @@ export function ClubLocationMap({ clubs }: ClubLocationMapProps) {
       {activePopup ? (
         <div
           className="club-location-popup"
+          onClick={(event) => event.stopPropagation()}
           style={{
             left: `${activePopup.x}px`,
             top: `${activePopup.y}px`,
