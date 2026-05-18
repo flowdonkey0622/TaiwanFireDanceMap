@@ -1,10 +1,11 @@
 # 台灣火舞地圖與資料庫
 
-這是一個以 Vite + React + TypeScript 建立的台灣火舞資訊網站。公開頁面提供互動縣市地圖、成發日曆、教學影片、火舞社團與文章連結；管理員可從 `/admin` 登入後台，透過 Supabase 管理活動與社團資料。
+這是一個以 Vite + React + TypeScript 建立的台灣火舞資訊網站。公開頁面提供互動縣市地圖、成發日曆、教學影片、火舞社團與文章連結，各分類有獨立網址；管理員可從 `/admin` 登入後台，透過 Supabase 管理活動與社團資料。
 
 ## 目前功能
 
 - 台灣 22 縣市互動地圖，支援滑鼠、鍵盤聚焦與點擊選取。
+- 公開內容使用獨立路由：`/`、`/calendar`、`/tutorials`、`/clubs`、`/articles`。
 - 依縣市顯示已發布活動數量、近期活動、日期、地點與外部連結。
 - 成發日曆由已發布活動日期自動產生月份，不再手動維護固定月份陣列。
 - 教學影片分頁以 YouTube playlist embed 呈現 Poi、流星、短棍等播放清單。
@@ -20,7 +21,11 @@
 瀏覽器
   -> GitHub Pages 靜態前端
   -> React Router-less route 判斷
-      / 或一般路徑：App 公開網站
+      /：互動地圖與網路活動分享
+      /calendar：成發日曆
+      /tutorials：教學影片
+      /clubs：火舞社團
+      /articles：文章連結
       /admin 或 #/admin：AdminApp 管理後台
   -> Supabase JS client
       events：公開頁讀 published，後台讀全部並可寫入
@@ -115,10 +120,18 @@ https://flowdonkey0622.github.io/TaiwanFireDanceMap/
 
 ```text
 src/
-  App.tsx                     公開網站主入口與分頁切換
+  App.tsx                     公開網站主入口、導覽與公開路由切換
   main.tsx                    根據 /admin 或 #/admin 切換 App/AdminApp
   assets.ts                   依 Vite base path 產生 public asset URL
   types.ts                    活動、社團、地圖 feature 型別
+  hooks/
+    usePublishedEvents.ts     公開活動資料載入 hook
+  pages/
+    MapPage.tsx               互動地圖與網路活動分享頁
+    CalendarPage.tsx          成發日曆頁
+    TutorialsPage.tsx         教學影片頁
+    ClubsPage.tsx             火舞社團頁
+    ArticlesPage.tsx          文章連結頁
   lib/
     supabase.ts               Supabase client 與環境變數檢查
   services/

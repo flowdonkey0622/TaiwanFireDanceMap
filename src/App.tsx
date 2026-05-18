@@ -1,73 +1,118 @@
 import { useEffect, useMemo, useState } from "react";
 import { logoUrl } from "./assets";
-import { ArticleLinks } from "./components/ArticleLinks";
-import { CalendarView } from "./components/CalendarView";
-import { ClubDirectory } from "./components/ClubDirectory";
-import { CountyPopup } from "./components/CountyPopup";
-import { OnlineActivities } from "./components/OnlineActivities";
-import { TaiwanMap } from "./components/TaiwanMap";
-import { TutorialVideos } from "./components/TutorialVideos";
-import { isSupabaseConfigured } from "./lib/supabase";
-import { getPublishedEvents } from "./services/events";
-import type { FireDanceEvent } from "./types";
+import { ArticlesPage } from "./pages/ArticlesPage";
+import { CalendarPage } from "./pages/CalendarPage";
+import { ClubsPage } from "./pages/ClubsPage";
+import { MapPage } from "./pages/MapPage";
+import { TutorialsPage } from "./pages/TutorialsPage";
 
-type LoadState = "idle" | "loading" | "success" | "error";
+type PublicRoute = "map" | "calendar" | "tutorials" | "clubs" | "articles";
+
+type NavItem = {
+  route: PublicRoute;
+  path: string;
+  label: string;
+};
+
+const navItems: NavItem[] = [
+  { route: "map", path: "/", label: "互動地圖" },
+  { route: "calendar", path: "/calendar", label: "成發日曆" },
+  { route: "tutorials", path: "/tutorials", label: "教學影片" },
+  { route: "clubs", path: "/clubs", label: "火舞社團" },
+  { route: "articles", path: "/articles", label: "文章連結" },
+];
+
+const routeByPath = new Map(navItems.map((item) => [item.path, item.route]));
+
+function normalizeRoutePath(routePath: string) {
+  const pathWithSlash = routePath.startsWith("/") ? routePath : `/${routePath}`;
+  return pathWithSlash.length > 1 ? pathWithSlash.replace(/\/$/, "") : pathWithSlash;
+}
+
+function getFallbackRoutePath() {
+  const fallbackRoutePath = new URLSearchParams(window.location.search).get("p");
+  return fallbackRoutePath ? normalizeRoutePath(fallbackRoutePath) : null;
+}
+
+function getRoutePathFromLocation() {
+  const fallbackRoutePath = getFallbackRoutePath();
+  if (fallbackRoutePath) {
+    return fallbackRoutePath;
+  }
+
+  if (window.location.hash.startsWith("#/")) {
+    return normalizeRoutePath(window.location.hash.slice(1));
+  }
+
+  const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
+  let routePath = window.location.pathname;
+
+  if (basePath && routePath.startsWith(basePath)) {
+    routePath = routePath.slice(basePath.length) || "/";
+  }
+
+  return normalizeRoutePath(routePath);
+}
+
+function getPublicRouteFromLocation(): PublicRoute {
+  return routeByPath.get(getRoutePathFromLocation()) ?? "map";
+}
+
+function getRouteHref(path: string) {
+  const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
+  return path === "/" ? import.meta.env.BASE_URL : `${basePath}${path}`;
+}
+
+function replaceFallbackRouteUrl() {
+  const fallbackRoutePath = getFallbackRoutePath();
+
+  if (fallbackRoutePath && routeByPath.has(fallbackRoutePath)) {
+    window.history.replaceState(null, "", getRouteHref(fallbackRoutePath));
+  }
+}
+
+function PublicPage({ route }: { route: PublicRoute }) {
+  if (route === "calendar") {
+    return <CalendarPage />;
+  }
+
+  if (route === "tutorials") {
+    return <TutorialsPage />;
+  }
+
+  if (route === "clubs") {
+    return <ClubsPage />;
+  }
+
+  if (route === "articles") {
+    return <ArticlesPage />;
+  }
+
+  return <MapPage />;
+}
 
 function App() {
   const copyrightYear = new Date().getFullYear();
-  const [activeView, setActiveView] = useState<
-    "map" | "calendar" | "tutorials" | "clubs" | "articles"
-  >("map");
-  const [activeCounty, setActiveCounty] = useState<string | null>(null);
-  const [selectedCounty, setSelectedCounty] = useState<string | null>(null);
-  const [events, setEvents] = useState<FireDanceEvent[]>([]);
-  const [eventsLoadState, setEventsLoadState] = useState<LoadState>("idle");
-  const [eventsErrorMessage, setEventsErrorMessage] = useState("");
-
-  useEffect(() => {
-    let isMounted = true;
-
-    async function loadEvents() {
-      if (!isSupabaseConfigured) {
-        setEventsLoadState("error");
-        setEventsErrorMessage("尚未設定 Supabase 環境變數。");
-        return;
-      }
-
-      setEventsLoadState("loading");
-
-      try {
-        const nextEvents = await getPublishedEvents();
-        if (isMounted) {
-          setEvents(nextEvents);
-          setEventsLoadState("success");
-        }
-      } catch (error) {
-        if (isMounted) {
-          console.error(error);
-          setEventsLoadState("error");
-          setEventsErrorMessage("活動資料讀取失敗，請稍後再試。");
-        }
-      }
-    }
-
-    loadEvents();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
-
-  const eventCounts = useMemo(
-    () =>
-      events.reduce<Record<string, number>>((counts, event) => {
-        counts[event.county] = (counts[event.county] ?? 0) + 1;
-        return counts;
-      }, {}),
-    [events],
+  const [activeRoute, setActiveRoute] = useState(getPublicRouteFromLocation);
+  const activeNavItem = useMemo(
+    () => navItems.find((item) => item.route === activeRoute) ?? navItems[0],
+    [activeRoute],
   );
 
-  const highlightedCounty = activeCounty ?? selectedCounty;
+  useEffect(() => {
+    replaceFallbackRouteUrl();
+
+    function handlePopState() {
+      setActiveRoute(getPublicRouteFromLocation());
+    }
+
+    window.addEventListener("popstate", handlePopState);
+    window.addEventListener("hashchange", handlePopState);
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+      window.removeEventListener("hashchange", handlePopState);
+    };
+  }, []);
 
   return (
     <main className="app-shell">
@@ -90,122 +135,31 @@ function App() {
           </p>
         </div>
 
-        <div className="view-tabs" role="tablist" aria-label="火舞活動資訊檢視">
-          <button
-            className={activeView === "map" ? "view-tab is-active" : "view-tab"}
-            type="button"
-            role="tab"
-            aria-selected={activeView === "map"}
-            onClick={() => setActiveView("map")}
-          >
-            互動地圖
-          </button>
-          <button
-            className={activeView === "calendar" ? "view-tab is-active" : "view-tab"}
-            type="button"
-            role="tab"
-            aria-selected={activeView === "calendar"}
-            onClick={() => setActiveView("calendar")}
-          >
-            成發日曆
-          </button>
-          <button
-            className={activeView === "tutorials" ? "view-tab is-active" : "view-tab"}
-            type="button"
-            role="tab"
-            aria-selected={activeView === "tutorials"}
-            onClick={() => setActiveView("tutorials")}
-          >
-            教學影片
-          </button>
-          <button
-            className={activeView === "clubs" ? "view-tab is-active" : "view-tab"}
-            type="button"
-            role="tab"
-            aria-selected={activeView === "clubs"}
-            onClick={() => setActiveView("clubs")}
-          >
-            火舞社團
-          </button>
-          <button
-            className={activeView === "articles" ? "view-tab is-active" : "view-tab"}
-            type="button"
-            role="tab"
-            aria-selected={activeView === "articles"}
-            onClick={() => setActiveView("articles")}
-          >
-            文章連結
-          </button>
-        </div>
+        <nav className="view-tabs" aria-label="火舞活動資訊檢視">
+          {navItems.map((item) => (
+            <a
+              className={activeRoute === item.route ? "view-tab is-active" : "view-tab"}
+              href={getRouteHref(item.path)}
+              key={item.route}
+              aria-current={activeRoute === item.route ? "page" : undefined}
+              onClick={(event) => {
+                if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+                  return;
+                }
 
-        {activeView === "map" ? (
-          <div role="tabpanel" aria-label="互動地圖">
-            {eventsLoadState === "loading" ? (
-              <div className="empty-state" role="status">
-                <p>活動資料載入中。</p>
-              </div>
-            ) : eventsLoadState === "error" ? (
-              <div className="empty-state" role="alert">
-                <p>{eventsErrorMessage}</p>
-              </div>
-            ) : null}
-            <div className="workspace">
-              <div className="map-card">
-                <TaiwanMap
-                  activeCounty={activeCounty}
-                  selectedCounty={selectedCounty}
-                  eventCounts={eventCounts}
-                  onHoverCounty={setActiveCounty}
-                  onSelectCounty={setSelectedCounty}
-                />
-                <div className="map-status" aria-live="polite">
-                  {highlightedCounty ? (
-                    <>
-                      <span>{highlightedCounty}</span>
-                      <strong>{eventCounts[highlightedCounty] ?? 0}</strong>
-                      <span>筆活動</span>
-                    </>
-                  ) : (
-                    <span>滑過或點擊縣市查看活動</span>
-                  )}
-                </div>
-              </div>
+                event.preventDefault();
+                window.history.pushState(null, "", getRouteHref(item.path));
+                setActiveRoute(item.route);
+              }}
+            >
+              {item.label}
+            </a>
+          ))}
+        </nav>
 
-              <CountyPopup
-                countyName={selectedCounty}
-                events={events}
-                onClose={() => setSelectedCounty(null)}
-              />
-            </div>
-            <OnlineActivities />
-          </div>
-        ) : activeView === "calendar" ? (
-          <div role="tabpanel" aria-label="成發日曆">
-            {eventsLoadState === "loading" ? (
-              <div className="empty-state" role="status">
-                <p>活動資料載入中。</p>
-              </div>
-            ) : eventsLoadState === "error" ? (
-              <div className="empty-state" role="alert">
-                <p>{eventsErrorMessage}</p>
-              </div>
-            ) : (
-              <CalendarView events={events} />
-            )}
-          </div>
-        ) : activeView === "tutorials" ? (
-          <div role="tabpanel" aria-label="教學影片">
-            <TutorialVideos />
-          </div>
-        ) : activeView === "clubs" ? (
-          <div role="tabpanel" aria-label="火舞社團">
-            <ClubDirectory />
-          </div>
-        ) : (
-          <div role="tabpanel" aria-label="文章連結">
-            <ArticleLinks />
-          </div>
-        )}
+        <section aria-label={activeNavItem.label}>
+          <PublicPage route={activeRoute} />
+        </section>
       </section>
       <footer className="site-footer">
         <div className="site-footer__links" aria-label="Fire & Flow Donkey 社群連結">

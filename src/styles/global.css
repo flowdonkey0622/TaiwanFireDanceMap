@@ -157,6 +157,9 @@ h1 {
 }
 
 .view-tab {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
   min-width: 112px;
   padding: 10px 16px;
   border: 0;
@@ -165,10 +168,12 @@ h1 {
   color: #6a4b32;
   font-weight: 800;
   cursor: pointer;
+  text-decoration: none;
 }
 
 .view-tab:hover {
   background: rgba(255, 229, 192, 0.72);
+  text-decoration: none;
 }
 
 .view-tab.is-active {

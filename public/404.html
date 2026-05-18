@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Fire Dance Taiwan</title>
+    <script>
+      const basePath = "/TaiwanFireDanceMap";
+      const routePath = window.location.pathname.startsWith(basePath)
+        ? window.location.pathname.slice(basePath.length) || "/"
+        : window.location.pathname;
+
+      window.location.replace(
+        `${basePath}/?p=${encodeURIComponent(routePath)}${window.location.hash}`,
+      );
+    </script>
+  </head>
+  <body></body>
+</html>
