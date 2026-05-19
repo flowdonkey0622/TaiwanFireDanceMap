@@ -29,6 +29,7 @@ const countyDisplayNames: Record<string, string> = {
   桃園縣: "桃園市",
 };
 
+// 地圖來源資料包含部分舊制或異體縣市名稱；在這裡統一成資料庫與 UI 使用的名稱。
 function getCountyName(featureItem: CountyFeature): string {
   const sourceName =
     featureItem.properties?.COUNTYNAME ??
@@ -72,8 +73,8 @@ function removeSmallDetachedPolygons(county: CountyFeature): CountyFeature {
     return county;
   }
 
-  // The source map includes tiny detached coastal polygons that read as drawing errors
-  // at this scale. Keep them out of the main-island view without changing source data.
+  // 原始地圖含有極小的離岸碎面，在目前比例下容易像繪製錯誤。
+  // 這裡只從主島顯示中排除，不修改原始資料檔。
   return {
     ...county,
     geometry: {
@@ -117,6 +118,7 @@ export function TaiwanMap({
     );
     const mainPath = geoPath(mainProjection);
 
+    // 離島用固定 inset 呈現，確保仍可點擊且看得清楚。
     const islandBoxes: Record<string, { x: number; y: number; width: number; height: number }> = {
       連江縣: { x: 26, y: 92, width: 112, height: 112 },
       金門縣: { x: 26, y: 226, width: 112, height: 112 },

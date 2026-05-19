@@ -5,12 +5,15 @@ import type { FireDanceEvent } from "../types";
 
 type LoadState = "idle" | "loading" | "success" | "error";
 
+// 公開頁共用的 published events 載入器。
+// 地圖與日曆共用同一份資料，避免活動數量與日曆內容不一致。
 export function usePublishedEvents() {
   const [events, setEvents] = useState<FireDanceEvent[]>([]);
   const [eventsLoadState, setEventsLoadState] = useState<LoadState>("idle");
   const [eventsErrorMessage, setEventsErrorMessage] = useState("");
 
   useEffect(() => {
+    // 非同步讀取期間若切換路由或元件卸載，避免繼續設定 React state。
     let isMounted = true;
 
     async function loadEvents() {

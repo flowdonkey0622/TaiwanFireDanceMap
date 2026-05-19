@@ -5,6 +5,7 @@ const supabaseKey =
   import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ??
   import.meta.env.VITE_SUPABASE_ANON_KEY;
 
+// 允許貼上 Supabase REST endpoint，這裡會正規化回 project URL。
 function normalizeSupabaseUrl(url: string | undefined): string | undefined {
   if (!url) {
     return undefined;
@@ -45,6 +46,7 @@ function isValidSupabaseUrl(url: string | undefined): url is string {
 export const isSupabaseConfigured =
   isValidSupabaseUrl(normalizedSupabaseUrl) && Boolean(supabaseKey);
 
+// 回傳 null 而不是直接丟錯，讓公開頁能顯示可控的錯誤狀態。
 export const supabase =
   isValidSupabaseUrl(normalizedSupabaseUrl) && supabaseKey
     ? createClient(normalizedSupabaseUrl, supabaseKey)

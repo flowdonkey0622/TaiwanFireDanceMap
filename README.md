@@ -43,7 +43,27 @@
 - 活動與社團已接 Supabase，讓後台修改後可直接反映到公開頁。
 - 教學影片、文章與網路活動目前仍是靜態資料，避免在內容量還小時過度擴張後台。
 - 日曆不再維護獨立活動清單，而是使用同一份 published events，避免地圖與日曆資料不一致。
-- 沒有使用前端路由套件；入口在 `src/main.tsx` 用 pathname/hash 判斷是否載入後台。
+- 沒有使用前端路由套件；`src/main.tsx` 只負責分流公開站與後台，公開頁路由由 `src/App.tsx` 管理。
+
+## 公開頁路由
+
+目前公開內容已拆成獨立頁面檔案：
+
+```text
+/          -> src/pages/MapPage.tsx
+/calendar  -> src/pages/CalendarPage.tsx
+/tutorials -> src/pages/TutorialsPage.tsx
+/clubs     -> src/pages/ClubsPage.tsx
+/articles  -> src/pages/ArticlesPage.tsx
+```
+
+路由實作重點：
+
+- `src/App.tsx` 維護 `navItems`、路徑正規化、導覽點擊與 `history.pushState`。
+- `src/pages/MapPage.tsx` 與 `src/pages/CalendarPage.tsx` 共用 `src/hooks/usePublishedEvents.ts`，確保地圖與日曆讀同一份 published events。
+- `src/main.tsx` 判斷 `/admin` 或 `#/admin` 時載入 `AdminApp`，其餘路徑載入公開站 `App`。
+- `public/404.html` 是 GitHub Pages 子路徑 fallback。使用者直接打開 `/calendar` 等路徑時，GitHub Pages 會先回 404 頁，再導回 `/?p=/calendar`，最後由 React 還原乾淨網址。
+- `sitemap.xml` 已列出公開頁路徑，新增頁面時記得同步更新。
 
 ## 開發環境
 
@@ -161,6 +181,10 @@ src/
 database/
   seed_static_content.sql     建立/seed events、learning_contents、online_activities
   add_events_club_id.sql      events.club_id 外鍵補丁
+
+public/
+  404.html                    GitHub Pages SPA 子路徑 fallback
+  flow-donkey-logo-circle.png 品牌 Logo 與 favicon
 ```
 
 ## Supabase 資料表

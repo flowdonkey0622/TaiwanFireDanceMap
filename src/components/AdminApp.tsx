@@ -116,7 +116,7 @@ export function AdminApp() {
     () => events.find((event) => event.id === selectedEventId) ?? null,
     [events, selectedEventId],
   );
-  // While creating, existing club buttons stay disabled so unsaved form input is not lost.
+  // 新增模式下停用既有項目按鈕，避免尚未儲存的表單內容被覆蓋。
   const isCreatingClub = selectedClubId === null;
   const isCreatingEvent = selectedEventId === null;
   const clubsByRegion = useMemo(
@@ -132,6 +132,7 @@ export function AdminApp() {
   const adminTitle = activeSection === "clubs" ? "社團資料後台" : "活動資料後台";
 
   useEffect(() => {
+    // 後台依賴 Supabase Auth；公開頁的缺少設定狀態由各自頁面處理。
     if (!supabase) {
       setIsLoading(false);
       setErrorMessage("尚未設定 Supabase 環境變數。");
@@ -158,6 +159,7 @@ export function AdminApp() {
   }, []);
 
   useEffect(() => {
+    // 每個後台分頁只載入需要的資料；活動分頁也載入社團，才能建立活動與社團的關聯。
     if (!session) {
       setClubs([]);
       setEvents([]);
@@ -235,6 +237,7 @@ export function AdminApp() {
   }
 
   function handleSelectSection(section: AdminSection) {
+    // 切換後台表單時清掉前一個分頁留下的成功或錯誤訊息。
     setActiveSection(section);
     setMessage("");
     setErrorMessage("");
@@ -299,6 +302,7 @@ export function AdminApp() {
     setErrorMessage("");
 
     try {
+      // 是否有已選社團 ID，決定這次提交是編輯既有社團或新增社團。
       if (selectedClubId) {
         await updateClub(selectedClubId, formState);
         setMessage("社團資料已更新。");
@@ -344,6 +348,7 @@ export function AdminApp() {
     setErrorMessage("");
 
     try {
+      // 是否有已選活動 ID，決定這次提交是編輯既有活動或新增活動。
       if (selectedEventId) {
         await updateEvent(selectedEventId, eventFormState);
         setMessage("活動資料已更新。");

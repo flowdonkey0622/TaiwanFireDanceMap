@@ -4,6 +4,8 @@
     <meta charset="UTF-8" />
     <title>Fire Dance Taiwan</title>
     <script>
+      // GitHub Pages 直接打開單頁應用子路徑時會回到這個檔案。
+      // 先把目標路徑放進 ?p=，讓 React 載入後還原成乾淨網址。
       const basePath = "/TaiwanFireDanceMap";
       const routePath = window.location.pathname.startsWith(basePath)
         ? window.location.pathname.slice(basePath.length) || "/"

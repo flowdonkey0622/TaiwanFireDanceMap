@@ -26,6 +26,7 @@ type ClubRow = {
 
 const clubStatuses: ClubStatus[] = ["draft", "published", "archived"];
 
+// 在 service 層驗證欄位，讓後台表單規則與資料庫寫入保持一致。
 function getTrimmedText(value: string, label: string, maxLength: number): string {
   const trimmedValue = value.trim();
 
@@ -71,7 +72,7 @@ function getInputExternalUrl(url: string, label: string): string | null {
   return safeUrl;
 }
 
-// Keep database column mapping isolated here so UI components can use camelCase.
+// 資料庫欄位轉換集中在這裡，UI 元件可維持 camelCase 命名。
 function toFireDanceClub(row: ClubRow): FireDanceClub {
   return {
     id: row.id,
@@ -86,6 +87,7 @@ function toFireDanceClub(row: ClubRow): FireDanceClub {
 }
 
 function toClubRow(input: ClubInput) {
+  // 介面層命名只在這裡轉回資料庫使用的 snake_case。
   if (!isClubStatus(input.status)) {
     throw new Error("社團狀態不正確。");
   }

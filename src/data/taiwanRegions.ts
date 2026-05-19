@@ -3,7 +3,7 @@ type TaiwanRegion = {
   counties: string[];
 };
 
-// This order is the shared north-to-south display order for admin and public club lists.
+// 這個順序是後台與公開社團列表共用的由北到南顯示順序。
 export const taiwanRegions: TaiwanRegion[] = [
   {
     label: "北區",

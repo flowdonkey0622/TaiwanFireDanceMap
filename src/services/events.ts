@@ -46,6 +46,7 @@ type EventRow = {
 const eventStatuses: EventStatus[] = ["draft", "published", "archived"];
 const eventTypes: EventType[] = ["workshop", "jam", "performance", "festival"];
 
+// 驗證邏輯靠近 Supabase 寫入點，避免無效表單資料繞過 UI 後直接寫入。
 function getTrimmedText(value: string, label: string, maxLength: number): string {
   const trimmedValue = value.trim();
 
@@ -96,6 +97,7 @@ function getInputExternalUrl(url: string, label: string): string {
 }
 
 function getJoinedClubName(clubs: EventRow["clubs"]): string | null {
+  // Supabase 關聯查詢結果可能因關聯形狀回傳物件或陣列，這裡統一取第一個社團名。
   if (Array.isArray(clubs)) {
     return clubs[0]?.club_name ?? null;
   }
@@ -103,7 +105,7 @@ function getJoinedClubName(clubs: EventRow["clubs"]): string | null {
   return clubs?.club_name ?? null;
 }
 
-// Keep database column mapping isolated here so admin components stay camelCase.
+// 資料庫欄位轉換集中在這裡，後台元件可維持 camelCase 命名。
 function toManagedEvent(row: EventRow): ManagedEvent {
   return {
     id: row.id,
@@ -124,6 +126,7 @@ function toManagedEvent(row: EventRow): ManagedEvent {
 }
 
 function toEventRow(input: EventInput) {
+  // 介面層命名只在這裡轉回資料庫使用的 snake_case。
   if (!isEventType(input.type)) {
     throw new Error("活動類型不正確。");
   }

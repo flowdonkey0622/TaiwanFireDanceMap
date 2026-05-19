@@ -15,6 +15,7 @@ const monthNames: Record<number, string> = {
   5: "June",
 };
 
+// 固定產生 6 週格線，避免切換月份時月曆版面高度跳動。
 function getMonthDays(year: number, monthIndex: number): CalendarDay[] {
   const firstDay = new Date(year, monthIndex, 1);
   const mondayOffset = (firstDay.getDay() + 6) % 7;
@@ -51,6 +52,7 @@ function getDayLabel(date: Date, inMonth: boolean, monthIndex: number): string {
 }
 
 function isCalendarEventTone(tone: string | null | undefined): tone is CalendarEventTone {
+  // 資料庫中的色調是自由文字；未知值一律回到預設樣式。
   return tone === "blue" || tone === "red" || tone === "orange" || tone === "purple";
 }
 
@@ -66,6 +68,7 @@ type CalendarViewProps = {
 export function CalendarView({ events }: CalendarViewProps) {
   const [activeMonthIndex, setActiveMonthIndex] = useState(0);
   const months = useMemo(() => {
+    // 月份由活動日期推導，不再額外維護月份清單。
     const monthKeys = Array.from(
       new Set(events.map((event) => event.date.slice(0, 7))),
     ).sort();

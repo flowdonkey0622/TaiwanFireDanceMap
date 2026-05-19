@@ -55,6 +55,7 @@ export function ClubDirectory() {
 
   const clubsByRegion = useMemo(
     () =>
+      // 區域順序集中在 taiwanRegions，讓後台與公開頁的排序保持一致。
       taiwanRegions
         .map((region) => ({
           ...region,
@@ -69,7 +70,7 @@ export function ClubDirectory() {
         .filter((region) => region.clubs.length > 0),
     [clubs],
   );
-  // Region toggles keep the list scannable after clubs grow across multiple areas.
+  // 社團跨區增加後，可用區域收合維持列表容易掃讀。
   function toggleRegion(regionLabel: string) {
     setOpenRegions({
       ...openRegions,

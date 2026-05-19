@@ -9,6 +9,7 @@ export function MapPage() {
   const [selectedCounty, setSelectedCounty] = useState<string | null>(null);
   const { events, eventsLoadState, eventsErrorMessage } = usePublishedEvents();
 
+  // 地圖元件只需要各縣市活動數；縣市彈窗則使用完整活動清單。
   const eventCounts = useMemo(
     () =>
       events.reduce<Record<string, number>>((counts, event) => {

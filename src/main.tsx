@@ -9,6 +9,7 @@ const isAdminRoute =
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
+    {/* 後台獨立於公開頁切換之外，方便自己管理登入與 session 狀態。 */}
     {isAdminRoute ? <AdminApp /> : <App />}
   </StrictMode>,
 );

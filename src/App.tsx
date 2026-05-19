@@ -24,6 +24,7 @@ const navItems: NavItem[] = [
 
 const routeByPath = new Map(navItems.map((item) => [item.path, item.route]));
 
+// 將直接連結、hash fallback、GitHub Pages 404 fallback 都正規化成同一套路徑 key。
 function normalizeRoutePath(routePath: string) {
   const pathWithSlash = routePath.startsWith("/") ? routePath : `/${routePath}`;
   return pathWithSlash.length > 1 ? pathWithSlash.replace(/\/$/, "") : pathWithSlash;
@@ -63,6 +64,8 @@ function getRouteHref(path: string) {
   return path === "/" ? import.meta.env.BASE_URL : `${basePath}${path}`;
 }
 
+// 404 fallback 會把 GitHub Pages 子路徑導到 /?p=/target。
+// 應用載入後再把暫時網址替換回正式路徑。
 function replaceFallbackRouteUrl() {
   const fallbackRoutePath = getFallbackRoutePath();
 
@@ -72,6 +75,7 @@ function replaceFallbackRouteUrl() {
 }
 
 function PublicPage({ route }: { route: PublicRoute }) {
+  // 頁面檔負責各自的資料載入與組合，避免 App 承擔所有頁面細節。
   if (route === "calendar") {
     return <CalendarPage />;
   }
@@ -143,6 +147,7 @@ function App() {
               key={item.route}
               aria-current={activeRoute === item.route ? "page" : undefined}
               onClick={(event) => {
+                // 保留瀏覽器預設行為，讓使用者可用新分頁/新視窗開啟或複製連結。
                 if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
                   return;
                 }
