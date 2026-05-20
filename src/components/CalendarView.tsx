@@ -105,7 +105,7 @@ export function CalendarView({ events }: CalendarViewProps) {
     <section className="calendar-section" aria-labelledby="calendar-title">
       <div className="calendar-intro">
         <p className="eyebrow">Fire & Flow Donkey</p>
-        <h2 id="calendar-title">2026 成發日曆</h2>
+        <h2 id="calendar-title">2026 活動日曆</h2>
         <p>以月曆方式整理火舞社群成發日期，方便快速掌握密集時段與活動分布。</p>
       </div>
 
