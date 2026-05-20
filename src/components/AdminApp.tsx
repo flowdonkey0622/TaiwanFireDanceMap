@@ -27,6 +27,9 @@ import {
 import type { FireDanceClub } from "../types";
 
 type AdminSection = "clubs" | "events" | "learning" | "online";
+type EventDateFilter = "all" | "active" | "past";
+type EventSortOrder = "dateAsc" | "dateDesc" | "titleAsc";
+type EventStatusFilter = "all" | EventStatus;
 
 const emptyClubForm: ClubInput = {
   schoolName: "",
@@ -94,6 +97,14 @@ function statusLabel(status: ClubStatus | EventStatus | undefined): string {
   return "草稿";
 }
 
+function getTodayDateKey(): string {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, "0");
+  const day = String(today.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
 export function AdminApp() {
   const [activeSection, setActiveSection] = useState<AdminSection>("clubs");
   const [session, setSession] = useState<Session | null>(null);
@@ -105,6 +116,10 @@ export function AdminApp() {
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [formState, setFormState] = useState<ClubInput>(emptyClubForm);
   const [eventFormState, setEventFormState] = useState<EventInput>(emptyEventForm);
+  const [eventDateFilter, setEventDateFilter] = useState<EventDateFilter>("all");
+  const [eventSortOrder, setEventSortOrder] = useState<EventSortOrder>("dateAsc");
+  const [eventStatusFilter, setEventStatusFilter] =
+    useState<EventStatusFilter>("all");
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState("");
@@ -131,6 +146,37 @@ export function AdminApp() {
         .filter((region) => region.clubs.length > 0),
     [clubs],
   );
+  const filteredEvents = useMemo(() => {
+    const todayDateKey = getTodayDateKey();
+
+    return events
+      .filter((event) => {
+        if (eventStatusFilter !== "all" && event.status !== eventStatusFilter) {
+          return false;
+        }
+
+        if (eventDateFilter === "active") {
+          return event.date >= todayDateKey;
+        }
+
+        if (eventDateFilter === "past") {
+          return event.date < todayDateKey;
+        }
+
+        return true;
+      })
+      .sort((a, b) => {
+        if (eventSortOrder === "dateDesc") {
+          return b.date.localeCompare(a.date) || a.title.localeCompare(b.title, "zh-Hant");
+        }
+
+        if (eventSortOrder === "titleAsc") {
+          return a.title.localeCompare(b.title, "zh-Hant") || a.date.localeCompare(b.date);
+        }
+
+        return a.date.localeCompare(b.date) || a.title.localeCompare(b.title, "zh-Hant");
+      });
+  }, [eventDateFilter, eventSortOrder, eventStatusFilter, events]);
   const adminTitle =
     activeSection === "clubs"
       ? "社團資料後台"
@@ -680,25 +726,71 @@ export function AdminApp() {
                   新增活動
                 </button>
               </div>
-              <div className="admin-list">
-                {events.map((event) => (
-                  <button
-                    className={
-                      selectedEvent?.id === event.id
-                        ? "admin-list-item is-active"
-                        : "admin-list-item"
+              <div className="admin-filters">
+                <label>
+                  時間範圍
+                  <select
+                    value={eventDateFilter}
+                    onChange={(event) =>
+                      setEventDateFilter(event.target.value as EventDateFilter)
                     }
-                    type="button"
-                    key={event.id}
-                    onClick={() => handleSelectEvent(event)}
-                    disabled={isCreatingEvent}
                   >
-                    <span>{event.title}</span>
-                    <small>
-                      {event.date} / {event.county} / {statusLabel(event.status)}
-                    </small>
-                  </button>
-                ))}
+                    <option value="all">全部活動</option>
+                    <option value="active">尚未結束</option>
+                    <option value="past">已結束</option>
+                  </select>
+                </label>
+                <label>
+                  排序
+                  <select
+                    value={eventSortOrder}
+                    onChange={(event) =>
+                      setEventSortOrder(event.target.value as EventSortOrder)
+                    }
+                  >
+                    <option value="dateAsc">日期由近到遠</option>
+                    <option value="dateDesc">日期由遠到近</option>
+                    <option value="titleAsc">名稱排序</option>
+                  </select>
+                </label>
+                <label>
+                  狀態
+                  <select
+                    value={eventStatusFilter}
+                    onChange={(event) =>
+                      setEventStatusFilter(event.target.value as EventStatusFilter)
+                    }
+                  >
+                    <option value="all">全部狀態</option>
+                    <option value="draft">草稿</option>
+                    <option value="published">已發布</option>
+                    <option value="archived">已封存</option>
+                  </select>
+                </label>
+              </div>
+              <div className="admin-list">
+                {filteredEvents.length > 0 ? (
+                  filteredEvents.map((event) => (
+                    <button
+                      className={
+                        selectedEvent?.id === event.id
+                          ? "admin-list-item is-active"
+                          : "admin-list-item"
+                      }
+                      type="button"
+                      key={event.id}
+                      onClick={() => handleSelectEvent(event)}
+                      disabled={isCreatingEvent}
+                    >
+                      <span>{event.title}</span>
+                      <small>
+                        {event.date} / {event.county} / {statusLabel(event.status)}
+                      </small>
+                    </button>
+                  ))
+                ) : (
+                  <p className="admin-list-empty">沒有符合篩選條件的活動。</p>
+                )}
               </div>
             </section>
 

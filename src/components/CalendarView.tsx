@@ -181,11 +181,26 @@ export function CalendarView({ events }: CalendarViewProps) {
                     {getDayLabel(day.date, day.inMonth, safeActiveMonth.monthIndex)}
                   </span>
                   <div className="calendar-cell__events">
-                    {dayEvents.map((event) => (
-                      <span className={eventClassName(event)} key={event.id}>
-                        {event.clubName ?? event.title}
-                      </span>
-                    ))}
+                    {dayEvents.map((event) => {
+                      const eventLabel = event.clubName ?? event.title;
+
+                      return event.link ? (
+                        <a
+                          className={eventClassName(event)}
+                          href={event.link}
+                          key={event.id}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          aria-label={`前往${eventLabel}活動連結`}
+                        >
+                          {eventLabel}
+                        </a>
+                      ) : (
+                        <span className={eventClassName(event)} key={event.id}>
+                          {eventLabel}
+                        </span>
+                      );
+                    })}
                   </div>
                 </div>
               );
