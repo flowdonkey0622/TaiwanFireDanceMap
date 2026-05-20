@@ -1,7 +1,7 @@
 import {
   eventTypeLabels,
   formatEventDate,
-} from "../data/events";
+} from "../services/events";
 import type { FireDanceEvent } from "../types";
 
 type CountyPopupProps = {

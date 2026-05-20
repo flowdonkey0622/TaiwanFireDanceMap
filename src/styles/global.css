@@ -901,6 +901,12 @@ h1 {
   line-height: 1.75;
 }
 
+.article-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
 .article-card a {
   justify-self: start;
   padding: 9px 12px;
@@ -913,6 +919,16 @@ h1 {
 
 .article-card a:hover {
   background: #57341f;
+}
+
+.article-card__secondary-link {
+  background: #fff4dd;
+  color: #4d311d;
+  box-shadow: inset 0 0 0 1px rgba(77, 49, 29, 0.24);
+}
+
+.article-card__secondary-link:hover {
+  background: #ffe2b8;
 }
 
 .club-section {

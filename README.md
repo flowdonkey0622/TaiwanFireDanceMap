@@ -143,7 +143,7 @@ src/
   App.tsx                     公開網站主入口、導覽與公開路由切換
   main.tsx                    根據 /admin 或 #/admin 切換 App/AdminApp
   assets.ts                   依 Vite base path 產生 public asset URL
-  types.ts                    活動、社團、地圖 feature 型別
+  types.ts                    活動、社團、日曆與地圖 feature 型別
   hooks/
     usePublishedEvents.ts     公開活動資料載入 hook
   pages/
@@ -157,8 +157,12 @@ src/
   services/
     events.ts                 活動資料讀寫、DB row 轉換與欄位驗證
     clubs.ts                  社團資料讀寫、DB row 轉換與欄位驗證
+    learningContents.ts       教學與文章內容後台讀寫
+    onlineActivities.ts       網路活動後台讀寫
   components/
-    AdminApp.tsx              Supabase 登入與社團/活動管理後台
+    AdminApp.tsx              Supabase 登入與管理後台入口
+    AdminLearningContents.tsx 教學與文章管理表單
+    AdminOnlineActivities.tsx 網路活動管理表單
     TaiwanMap.tsx             台灣縣市互動 SVG 地圖
     CountyPopup.tsx           縣市活動列表
     CalendarView.tsx          已發布活動月曆
@@ -173,8 +177,6 @@ src/
     tutorialPlaylists.ts      教學播放清單靜態資料
     articles.ts               文章連結靜態資料
     onlineActivities.ts       網路活動靜態資料
-    events.ts                 活動類型標籤、日期格式工具與舊靜態活動資料
-    calendarEvents.ts         日曆色調型別與舊靜態日曆資料
   styles/
     global.css                全站樣式
 
@@ -226,9 +228,61 @@ public/
 - `youtube_url`
 - `status`：`draft`、`published`、`archived`
 
-### 目前尚未接到前端 service 的表
+### `learning_contents`
 
-`database/seed_static_content.sql` 也包含 `learning_contents` 與 `online_activities` 的 seed，但目前公開頁的教學、文章與網路活動仍讀取 `src/data/*.ts` 靜態資料。
+後台可新增、更新、封存教學影片與文章連結。公開文章頁會優先讀取已發布的 `article_link`，讀取失敗時回退 `src/data/articles.ts` 靜態資料；教學影片頁目前仍讀取 `src/data/tutorialPlaylists.ts` 靜態資料。
+
+主要欄位：
+
+- `id`
+- `category_id`
+- `content_type`：目前後台使用 `playlist`、`article_link`
+- `title`
+- `summary`
+- `external_url`
+- `original_url`
+- `youtube_playlist_id`
+- `thumbnail_url`
+- `body`
+- `status`：`draft`、`published`、`archived`
+- `sort_order`
+- `slug`
+- `category_slug`
+- `source`
+- `published_label`
+- `tags`
+- `accent`
+
+### `content_categories`
+
+後台在編輯 `learning_contents` 時讀取分類下拉選單。
+
+主要欄位：
+
+- `id`
+- `name`
+- `slug`
+- `sort_order`
+- `status`：`draft`、`published`、`archived`
+
+### `online_activities`
+
+後台可新增、更新、封存網路活動。公開頁目前仍讀取 `src/data/onlineActivities.ts` 靜態資料。
+
+主要欄位：
+
+- `id`
+- `slug`
+- `title`
+- `description`
+- `period`
+- `primary_link_label`
+- `primary_link_url`
+- `secondary_link_label`
+- `secondary_link_url`
+- `accent`
+- `sort_order`
+- `status`：`draft`、`published`、`archived`
 
 ## 資料維護
 
@@ -303,6 +357,6 @@ src/data/taiwan-counties.topo.json
 
 ## 已知維護注意事項
 
-- `src/data/events.ts` 與 `src/data/calendarEvents.ts` 仍保留舊靜態資料，但公開頁活動與日曆目前以 Supabase `events` 為準。
+- 教學與網路活動已先接後台更新頁；公開頁仍使用 `src/data/*.ts` 靜態資料，尚未切換為 Supabase 讀取。
 - `database/seed_static_content.sql` 尚未建立 `clubs` 表；若新建 Supabase 專案，需要另外建立 `clubs` schema，或補齊 migration。
 - `SUPABASE_BACKEND_PLAN.md` 是早期規劃文件，部分內容已被目前實作取代，實際狀態以程式碼與本 README 為準。

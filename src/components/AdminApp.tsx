@@ -1,9 +1,10 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { logoUrl } from "../assets";
-import { eventTypeLabels } from "../data/events";
 import { counties, taiwanRegions } from "../data/taiwanRegions";
 import { isSupabaseConfigured, supabase } from "../lib/supabase";
+import { AdminLearningContents } from "./AdminLearningContents";
+import { AdminOnlineActivities } from "./AdminOnlineActivities";
 import {
   archiveClub,
   createClub,
@@ -17,6 +18,7 @@ import {
   createEvent,
   getManagedEvents,
   updateEvent,
+  eventTypeLabels,
   type EventInput,
   type EventStatus,
   type EventType,
@@ -24,7 +26,7 @@ import {
 } from "../services/events";
 import type { FireDanceClub } from "../types";
 
-type AdminSection = "clubs" | "events";
+type AdminSection = "clubs" | "events" | "learning" | "online";
 
 const emptyClubForm: ClubInput = {
   schoolName: "",
@@ -129,7 +131,14 @@ export function AdminApp() {
         .filter((region) => region.clubs.length > 0),
     [clubs],
   );
-  const adminTitle = activeSection === "clubs" ? "社團資料後台" : "活動資料後台";
+  const adminTitle =
+    activeSection === "clubs"
+      ? "社團資料後台"
+      : activeSection === "events"
+        ? "活動資料後台"
+        : activeSection === "learning"
+          ? "教學與文章後台"
+          : "網路活動後台";
 
   useEffect(() => {
     // 後台依賴 Supabase Auth；公開頁的缺少設定狀態由各自頁面處理。
@@ -168,7 +177,7 @@ export function AdminApp() {
 
     if (activeSection === "clubs") {
       loadClubs();
-    } else {
+    } else if (activeSection === "events") {
       loadEvents();
       loadClubs();
     }
@@ -477,6 +486,20 @@ export function AdminApp() {
         >
           活動
         </button>
+        <button
+          className={activeSection === "learning" ? "is-active" : ""}
+          type="button"
+          onClick={() => handleSelectSection("learning")}
+        >
+          教學與文章
+        </button>
+        <button
+          className={activeSection === "online" ? "is-active" : ""}
+          type="button"
+          onClick={() => handleSelectSection("online")}
+        >
+          網路活動
+        </button>
       </nav>
 
       <div className="admin-layout">
@@ -648,7 +671,7 @@ export function AdminApp() {
               </form>
             </section>
           </>
-        ) : (
+        ) : activeSection === "events" ? (
           <>
             <section className="admin-card">
               <div className="admin-card__title">
@@ -849,6 +872,10 @@ export function AdminApp() {
               </form>
             </section>
           </>
+        ) : activeSection === "learning" ? (
+          <AdminLearningContents />
+        ) : (
+          <AdminOnlineActivities />
         )}
       </div>
     </main>

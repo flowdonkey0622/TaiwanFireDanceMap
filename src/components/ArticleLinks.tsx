@@ -1,6 +1,37 @@
+import { useEffect, useState } from "react";
 import { articleLinks } from "../data/articles";
+import { isSupabaseConfigured } from "../lib/supabase";
+import { getPublishedArticleLinks } from "../services/learningContents";
+import type { ArticleLink } from "../data/articles";
 
 export function ArticleLinks() {
+  const [articles, setArticles] = useState<ArticleLink[]>(articleLinks);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadArticles() {
+      if (!isSupabaseConfigured) {
+        return;
+      }
+
+      try {
+        const nextArticles = await getPublishedArticleLinks();
+        if (isMounted && nextArticles.length > 0) {
+          setArticles(nextArticles);
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    loadArticles();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   return (
     <section className="article-section" aria-labelledby="article-title">
       <div className="article-intro">
@@ -12,7 +43,7 @@ export function ArticleLinks() {
       </div>
 
       <div className="article-grid">
-        {articleLinks.map((article) => (
+        {articles.map((article) => (
           <article
             className={`article-card article-card--${article.accent}`}
             key={article.id}
@@ -33,10 +64,21 @@ export function ArticleLinks() {
               ))}
             </div>
 
-            {/* 文章預覽採手動資料，外部連結只負責導到原文。 */}
-            <a href={article.url} target="_blank" rel="noopener noreferrer">
-              閱讀文章
-            </a>
+            <div className="article-card__actions">
+              <a href={article.url} target="_blank" rel="noopener noreferrer">
+                閱讀文章
+              </a>
+              {article.originalUrl ? (
+                <a
+                  className="article-card__secondary-link"
+                  href={article.originalUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  閱讀原文
+                </a>
+              ) : null}
+            </div>
           </article>
         ))}
       </div>

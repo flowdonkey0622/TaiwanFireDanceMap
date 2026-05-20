@@ -4,6 +4,13 @@ import type { FireDanceEvent } from "../types";
 export type EventStatus = "draft" | "published" | "archived";
 export type EventType = FireDanceEvent["type"];
 
+export const eventTypeLabels: Record<EventType, string> = {
+  workshop: "工作坊",
+  jam: "交流 Jam",
+  performance: "演出",
+  festival: "節慶",
+};
+
 export type ManagedEvent = FireDanceEvent & {
   status: EventStatus;
   slug: string | null;
@@ -94,6 +101,14 @@ function getInputExternalUrl(url: string, label: string): string {
   }
 
   return safeUrl;
+}
+
+export function formatEventDate(date: string): string {
+  return new Intl.DateTimeFormat("zh-TW", {
+    month: "long",
+    day: "numeric",
+    weekday: "short",
+  }).format(new Date(`${date}T12:00:00+08:00`));
 }
 
 function getJoinedClubName(clubs: EventRow["clubs"]): string | null {

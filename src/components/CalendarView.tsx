@@ -1,7 +1,6 @@
 import { useMemo, useState } from "react";
-import type { CalendarEventTone } from "../data/calendarEvents";
 import { logoUrl } from "../assets";
-import type { FireDanceEvent } from "../types";
+import type { CalendarEventTone, FireDanceEvent } from "../types";
 
 type CalendarDay = {
   date: Date;

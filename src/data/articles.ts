@@ -3,6 +3,7 @@ export type ArticleLink = {
   title: string;
   description: string;
   url: string;
+  originalUrl?: string;
   source: string;
   publishedLabel: string;
   tags: string[];
