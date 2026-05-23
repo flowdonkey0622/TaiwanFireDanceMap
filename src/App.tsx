@@ -17,7 +17,7 @@ type NavItem = {
 
 const navItems: NavItem[] = [
   { route: "map", path: "/", label: "互動地圖" },
-  { route: "calendar", path: "/calendar", label: "成發日曆" },
+  { route: "calendar", path: "/calendar", label: "活動日曆" },
   { route: "tutorials", path: "/tutorials", label: "教學影片" },
   { route: "clubs", path: "/clubs", label: "火舞社團" },
   { route: "articles", path: "/articles", label: "文章連結" },

@@ -66,6 +66,7 @@ type CalendarViewProps = {
 
 export function CalendarView({ events }: CalendarViewProps) {
   const [activeMonthIndex, setActiveMonthIndex] = useState(0);
+  const todayKey = toDateKey(new Date());
   const months = useMemo(() => {
     // 月份由活動日期推導，不再額外維護月份清單。
     const monthKeys = Array.from(
@@ -172,13 +173,22 @@ export function CalendarView({ events }: CalendarViewProps) {
             {days.map((day) => {
               const dateKey = toDateKey(day.date);
               const dayEvents = eventsByDate[dateKey] ?? [];
+              const isToday = dateKey === todayKey;
+              const cellClassName = [
+                "calendar-cell",
+                !day.inMonth ? "is-muted" : "",
+                isToday ? "is-today" : "",
+              ]
+                .filter(Boolean)
+                .join(" ");
               return (
                 <div
-                  className={day.inMonth ? "calendar-cell" : "calendar-cell is-muted"}
+                  className={cellClassName}
                   key={dateKey}
                 >
                   <span className="calendar-date">
                     {getDayLabel(day.date, day.inMonth, safeActiveMonth.monthIndex)}
+                    {isToday ? <small>今日</small> : null}
                   </span>
                   <div className="calendar-cell__events">
                     {dayEvents.map((event) => {
