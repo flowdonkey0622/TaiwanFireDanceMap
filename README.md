@@ -5,7 +5,7 @@
 ## 目前功能
 
 - 台灣 22 縣市互動地圖，支援滑鼠、鍵盤聚焦與點擊選取。
-- 公開內容使用獨立路由：`/`、`/calendar`、`/tutorials`、`/clubs`、`/articles`。
+- 公開內容使用獨立路由：`/`、`/calendar`、`/tutorials`、`/clubs`、`/articles`、`/articles/:slug`。
 - 依縣市顯示已發布活動數量、近期活動、日期、地點與外部連結。
 - 成發日曆由已發布活動日期自動產生月份，不再手動維護固定月份陣列。
 - 教學影片分頁以 YouTube playlist embed 呈現 Poi、流星、短棍等播放清單。
@@ -55,6 +55,7 @@
 /tutorials -> src/pages/TutorialsPage.tsx
 /clubs     -> src/pages/ClubsPage.tsx
 /articles  -> src/pages/ArticlesPage.tsx
+/articles/:slug -> src/pages/ArticleDetailPage.tsx
 ```
 
 路由實作重點：
@@ -152,6 +153,7 @@ src/
     TutorialsPage.tsx         教學影片頁
     ClubsPage.tsx             火舞社團頁
     ArticlesPage.tsx          文章連結頁
+    ArticleDetailPage.tsx     Markdown 站內文章頁
   lib/
     supabase.ts               Supabase client 與環境變數檢查
   services/
@@ -176,6 +178,7 @@ src/
     taiwan-counties.topo.json 台灣縣市邊界資料
     tutorialPlaylists.ts      教學播放清單靜態資料
     articles.ts               文章連結靜態資料
+    webArticles.ts            Google Doc 轉成的站內網頁文章內容
     onlineActivities.ts       網路活動靜態資料
   styles/
     global.css                全站樣式
@@ -183,6 +186,8 @@ src/
 database/
   seed_static_content.sql     建立/seed events、learning_contents、online_activities
   add_events_club_id.sql      events.club_id 外鍵補丁
+  add_learning_content_web_article_slug.sql
+                              learning_contents.web_article_slug 補丁
 
 public/
   404.html                    GitHub Pages SPA 子路徑 fallback
@@ -230,7 +235,7 @@ public/
 
 ### `learning_contents`
 
-後台可新增、更新、封存教學影片與文章連結。公開文章頁會優先讀取已發布的 `article_link`，讀取失敗時回退 `src/data/articles.ts` 靜態資料；教學影片頁目前仍讀取 `src/data/tutorialPlaylists.ts` 靜態資料。
+後台可新增、更新、封存教學影片與文章。公開文章列表會優先讀取已發布的 `article_link`，讀取失敗時回退 `src/data/articles.ts` 靜態資料；教學影片頁目前仍讀取 `src/data/tutorialPlaylists.ts` 靜態資料。
 
 主要欄位：
 
@@ -239,11 +244,12 @@ public/
 - `content_type`：目前後台使用 `playlist`、`article_link`
 - `title`
 - `summary`
-- `external_url`
-- `original_url`
+- `external_url`：外部文章主連結，公開頁按鈕顯示為「閱讀文章」
+- `original_url`：站內翻譯或整理文章的原文連結，公開頁按鈕顯示為「閱讀原文」
 - `youtube_playlist_id`
 - `thumbnail_url`
-- `body`
+- `web_article_slug`：已建立的站內網頁文章 slug，公開頁按鈕顯示為「網頁文章」
+- `body`：舊欄位，目前後台不再直接編輯 Markdown 內文
 - `status`：`draft`、`published`、`archived`
 - `sort_order`
 - `slug`
@@ -323,7 +329,7 @@ src/data/tutorialPlaylists.ts
 
 網站使用 YouTube playlist embed，因此通常只需維護播放清單 ID。YouTube 播放清單本身新增、刪除或排序影片後，網站播放器會跟著更新。
 
-### 文章連結
+### 文章
 
 靜態資料位於：
 
@@ -332,6 +338,20 @@ src/data/articles.ts
 ```
 
 文章預覽採手動維護，不會在前端即時抓 Medium、GitBook 或其他外部網站內容。
+
+公開文章列表支援三種按鈕，且同一篇文章可同時存在：
+
+- `external_url`：顯示「閱讀文章」，以新分頁開啟外部連結。
+- `original_url`：顯示「閱讀原文」，以新分頁開啟原文連結。
+- `web_article_slug`：顯示「網頁文章」，開啟本站 `/articles/:slug`。
+
+站內網頁文章內容位於：
+
+```text
+src/data/webArticles.ts
+```
+
+站內網頁文章只支援 Markdown，不支援 raw HTML。若轉譯稿先維護在 Google Doc，可把文件連結交給 Codex 轉成 Markdown，新增到 `src/data/webArticles.ts`；新增成功後，後台「網頁文章之網頁」選單會出現該文章標題，供 `learning_contents.web_article_slug` 選用。
 
 ### 網路活動
 
@@ -357,6 +377,6 @@ src/data/taiwan-counties.topo.json
 
 ## 已知維護注意事項
 
-- 教學與網路活動已先接後台更新頁；公開頁仍使用 `src/data/*.ts` 靜態資料，尚未切換為 Supabase 讀取。
+- 教學與網路活動已先接後台更新頁；公開教學與網路活動仍使用 `src/data/*.ts` 靜態資料，尚未切換為 Supabase 讀取。
 - `database/seed_static_content.sql` 尚未建立 `clubs` 表；若新建 Supabase 專案，需要另外建立 `clubs` schema，或補齊 migration。
 - `SUPABASE_BACKEND_PLAN.md` 是早期規劃文件，部分內容已被目前實作取代，實際狀態以程式碼與本 README 為準。

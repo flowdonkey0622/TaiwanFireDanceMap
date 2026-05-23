@@ -2,8 +2,10 @@ export type ArticleLink = {
   id: string;
   title: string;
   description: string;
-  url: string;
+  url?: string;
   originalUrl?: string;
+  webArticleSlug?: string;
+  webArticleTitle?: string;
   source: string;
   publishedLabel: string;
   tags: string[];
@@ -30,6 +32,9 @@ export const articleLinks: ArticleLink[] = [
     description:
       "將 reels、weaves、windmills、crossers、腰繞與 meltdowns 等動作，依據位置與時序節奏整理進同一套框架，並透過 schemes 與 beat graphs 分析說明。雖然最初為 poi 設計，也能作為其他 Flow Arts 道具的參考。",
     url: "https://antispinner.gitbook.io/btf",
+    originalUrl: "https://antispinner.gitbook.io/btf",
+    webArticleSlug: "body-tracing-framework",
+    webArticleTitle: "Body Tracing Framework",
     source: "GitBook",
     publishedLabel: "框架文章",
     tags: ["Poi", "Body Tracing", "Flow Arts"],

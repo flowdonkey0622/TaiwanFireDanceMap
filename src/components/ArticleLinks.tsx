@@ -1,8 +1,36 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type MouseEvent } from "react";
 import { articleLinks } from "../data/articles";
 import { isSupabaseConfigured } from "../lib/supabase";
 import { getPublishedArticleLinks } from "../services/learningContents";
 import type { ArticleLink } from "../data/articles";
+
+function getArticleHref(article: ArticleLink) {
+  return article.url;
+}
+
+function getWebArticleHref(article: ArticleLink) {
+  const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
+  return article.webArticleSlug ? `${basePath}/articles/${article.webArticleSlug}` : undefined;
+}
+
+function handleInternalArticleClick(
+  event: MouseEvent<HTMLAnchorElement>,
+  article: ArticleLink,
+) {
+  const href = getWebArticleHref(article);
+
+  if (!href) {
+    return;
+  }
+
+  if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+    return;
+  }
+
+  event.preventDefault();
+  window.history.pushState(null, "", href);
+  window.dispatchEvent(new PopStateEvent("popstate"));
+}
 
 export function ArticleLinks() {
   const [articles, setArticles] = useState<ArticleLink[]>(articleLinks);
@@ -65,9 +93,15 @@ export function ArticleLinks() {
             </div>
 
             <div className="article-card__actions">
-              <a href={article.url} target="_blank" rel="noopener noreferrer">
-                閱讀文章
-              </a>
+              {getArticleHref(article) ? (
+                <a
+                  href={getArticleHref(article)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  閱讀文章
+                </a>
+              ) : null}
               {article.originalUrl ? (
                 <a
                   className="article-card__secondary-link"
@@ -76,6 +110,15 @@ export function ArticleLinks() {
                   rel="noopener noreferrer"
                 >
                   閱讀原文
+                </a>
+              ) : null}
+              {getWebArticleHref(article) ? (
+                <a
+                  className="article-card__web-link"
+                  href={getWebArticleHref(article)}
+                  onClick={(event) => handleInternalArticleClick(event, article)}
+                >
+                  網頁文章
                 </a>
               ) : null}
             </div>

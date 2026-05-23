@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { logoUrl } from "./assets";
+import { ArticleDetailPage } from "./pages/ArticleDetailPage";
 import { ArticlesPage } from "./pages/ArticlesPage";
 import { CalendarPage } from "./pages/CalendarPage";
 import { ClubsPage } from "./pages/ClubsPage";
@@ -55,8 +56,29 @@ function getRoutePathFromLocation() {
   return normalizeRoutePath(routePath);
 }
 
+function getPublicRouteFromPath(routePath: string): PublicRoute {
+  if (routePath.startsWith("/articles/")) {
+    return "articles";
+  }
+
+  return routeByPath.get(routePath) ?? "map";
+}
+
+function getArticleSlugFromPath(routePath: string) {
+  if (!routePath.startsWith("/articles/")) {
+    return null;
+  }
+
+  const slug = routePath.slice("/articles/".length).trim();
+  try {
+    return slug ? decodeURIComponent(slug) : null;
+  } catch {
+    return null;
+  }
+}
+
 function getPublicRouteFromLocation(): PublicRoute {
-  return routeByPath.get(getRoutePathFromLocation()) ?? "map";
+  return getPublicRouteFromPath(getRoutePathFromLocation());
 }
 
 function getRouteHref(path: string) {
@@ -69,12 +91,12 @@ function getRouteHref(path: string) {
 function replaceFallbackRouteUrl() {
   const fallbackRoutePath = getFallbackRoutePath();
 
-  if (fallbackRoutePath && routeByPath.has(fallbackRoutePath)) {
+  if (fallbackRoutePath && getPublicRouteFromPath(fallbackRoutePath) !== "map") {
     window.history.replaceState(null, "", getRouteHref(fallbackRoutePath));
   }
 }
 
-function PublicPage({ route }: { route: PublicRoute }) {
+function PublicPage({ articleSlug, route }: { articleSlug: string | null; route: PublicRoute }) {
   // 頁面檔負責各自的資料載入與組合，避免 App 承擔所有頁面細節。
   if (route === "calendar") {
     return <CalendarPage />;
@@ -89,6 +111,10 @@ function PublicPage({ route }: { route: PublicRoute }) {
   }
 
   if (route === "articles") {
+    if (articleSlug) {
+      return <ArticleDetailPage slug={articleSlug} />;
+    }
+
     return <ArticlesPage />;
   }
 
@@ -98,6 +124,11 @@ function PublicPage({ route }: { route: PublicRoute }) {
 function App() {
   const copyrightYear = new Date().getFullYear();
   const [activeRoute, setActiveRoute] = useState(getPublicRouteFromLocation);
+  const [activeRoutePath, setActiveRoutePath] = useState(getRoutePathFromLocation);
+  const activeArticleSlug = useMemo(
+    () => getArticleSlugFromPath(activeRoutePath),
+    [activeRoutePath],
+  );
   const activeNavItem = useMemo(
     () => navItems.find((item) => item.route === activeRoute) ?? navItems[0],
     [activeRoute],
@@ -107,6 +138,7 @@ function App() {
     replaceFallbackRouteUrl();
 
     function handlePopState() {
+      setActiveRoutePath(getRoutePathFromLocation());
       setActiveRoute(getPublicRouteFromLocation());
     }
 
@@ -154,6 +186,7 @@ function App() {
 
                 event.preventDefault();
                 window.history.pushState(null, "", getRouteHref(item.path));
+                setActiveRoutePath(item.path);
                 setActiveRoute(item.route);
               }}
             >
@@ -163,7 +196,7 @@ function App() {
         </nav>
 
         <section aria-label={activeNavItem.label}>
-          <PublicPage route={activeRoute} />
+          <PublicPage articleSlug={activeArticleSlug} route={activeRoute} />
         </section>
       </section>
       <footer className="site-footer">

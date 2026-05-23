@@ -1,5 +1,6 @@
 import { supabase } from "../lib/supabase";
 import type { ArticleLink } from "../data/articles";
+import { getWebArticleBySlug } from "../data/webArticles";
 
 export type ContentStatus = "draft" | "published" | "archived";
 export type ContentType = "playlist" | "article_link";
@@ -22,7 +23,7 @@ export type ManagedLearningContent = {
   originalUrl: string;
   youtubePlaylistId: string;
   thumbnailUrl: string;
-  body: string;
+  webArticleSlug: string;
   status: ContentStatus;
   sortOrder: number;
   slug: string;
@@ -44,7 +45,7 @@ type LearningContentRow = {
   original_url: string | null;
   youtube_playlist_id: string | null;
   thumbnail_url: string | null;
-  body: string | null;
+  web_article_slug: string | null;
   status: string;
   sort_order: number;
   slug: string | null;
@@ -69,6 +70,7 @@ type PublishedArticleRow = {
   summary: string;
   external_url: string | null;
   original_url: string | null;
+  web_article_slug: string | null;
   source: string | null;
   published_label: string | null;
   tags: string[] | null;
@@ -153,7 +155,7 @@ function toManagedLearningContent(row: LearningContentRow): ManagedLearningConte
     originalUrl: getSafeExternalUrl(row.original_url) ?? "",
     youtubePlaylistId: row.youtube_playlist_id ?? "",
     thumbnailUrl: getSafeExternalUrl(row.thumbnail_url) ?? "",
-    body: row.body ?? "",
+    webArticleSlug: row.web_article_slug ?? "",
     status: isContentStatus(row.status) ? row.status : "draft",
     sortOrder: row.sort_order,
     slug: row.slug ?? "",
@@ -166,17 +168,22 @@ function toManagedLearningContent(row: LearningContentRow): ManagedLearningConte
 
 function toArticleLink(row: PublishedArticleRow): ArticleLink | null {
   const url = getSafeExternalUrl(row.external_url);
+  const webArticleSlug = row.web_article_slug?.trim() ?? "";
+  const webArticle = webArticleSlug ? getWebArticleBySlug(webArticleSlug) : null;
+  const id = row.slug ?? row.id;
 
-  if (!url) {
+  if (!url && !webArticleSlug && !getSafeExternalUrl(row.original_url)) {
     return null;
   }
 
   return {
-    id: row.slug ?? row.id,
+    id,
     title: row.title,
     description: row.summary,
-    url,
+    url: url ?? undefined,
     originalUrl: getSafeExternalUrl(row.original_url) ?? undefined,
+    webArticleSlug: webArticleSlug || undefined,
+    webArticleTitle: webArticle?.title ?? undefined,
     source: row.source ?? "文章",
     publishedLabel: row.published_label ?? "文章連結",
     tags: row.tags ?? [],
@@ -193,16 +200,24 @@ function toLearningContentRow(input: LearningContentInput) {
     throw new Error("內容狀態不正確。");
   }
 
+  const externalUrl = getInputExternalUrl(input.externalUrl, "外部連結");
+  const originalUrl = getInputExternalUrl(input.originalUrl, "原文連結");
+  const webArticleSlug = getTrimmedText(input.webArticleSlug, "網頁文章", 120);
+
+  if (input.contentType === "article_link" && !externalUrl && !originalUrl && !webArticleSlug) {
+    throw new Error("文章需填寫閱讀文章連結、原文連結或選擇網頁文章。");
+  }
+
   return {
     category_id: input.categoryId || null,
     content_type: input.contentType,
     title: getTrimmedText(input.title, "標題", 160),
     summary: getTrimmedText(input.summary, "摘要", 2000),
-    external_url: getInputExternalUrl(input.externalUrl, "外部連結"),
-    original_url: getInputExternalUrl(input.originalUrl, "原文連結"),
+    external_url: externalUrl,
+    original_url: originalUrl,
     youtube_playlist_id: getTrimmedText(input.youtubePlaylistId, "YouTube 播放清單 ID", 160) || null,
     thumbnail_url: getInputExternalUrl(input.thumbnailUrl, "縮圖連結"),
-    body: getTrimmedText(input.body, "內文", 8000) || null,
+    web_article_slug: webArticleSlug || null,
     status: input.status,
     sort_order: input.sortOrder,
     slug: getTrimmedText(input.slug, "Slug", 120) || null,
@@ -240,7 +255,7 @@ export async function getManagedLearningContents(): Promise<ManagedLearningConte
   const { data, error } = await supabase
     .from("learning_contents")
     .select(
-      "id, category_id, content_type, title, summary, external_url, original_url, youtube_playlist_id, thumbnail_url, body, status, sort_order, slug, category_slug, source, published_label, tags, accent",
+      "id, category_id, content_type, title, summary, external_url, original_url, youtube_playlist_id, thumbnail_url, web_article_slug, status, sort_order, slug, category_slug, source, published_label, tags, accent",
     )
     .order("sort_order", { ascending: true })
     .order("title", { ascending: true });
@@ -260,7 +275,7 @@ export async function getPublishedArticleLinks(): Promise<ArticleLink[]> {
   const { data, error } = await supabase
     .from("learning_contents")
     .select(
-      "id, slug, title, summary, external_url, original_url, source, published_label, tags, accent",
+      "id, slug, title, summary, external_url, original_url, web_article_slug, source, published_label, tags, accent",
     )
     .eq("status", "published")
     .eq("content_type", "article_link")
@@ -272,6 +287,28 @@ export async function getPublishedArticleLinks(): Promise<ArticleLink[]> {
   }
 
   return (data ?? []).map(toArticleLink).filter((article) => article !== null);
+}
+
+export async function getPublishedArticleBySlug(slug: string): Promise<ArticleLink | null> {
+  if (!supabase) {
+    throw new Error("Supabase environment variables are not configured.");
+  }
+
+  const { data, error } = await supabase
+    .from("learning_contents")
+    .select(
+      "id, slug, title, summary, external_url, original_url, web_article_slug, source, published_label, tags, accent",
+    )
+    .eq("status", "published")
+    .eq("content_type", "article_link")
+    .eq("slug", slug)
+    .maybeSingle();
+
+  if (error) {
+    throw error;
+  }
+
+  return data ? toArticleLink(data) : null;
 }
 
 export async function createLearningContent(input: LearningContentInput): Promise<void> {

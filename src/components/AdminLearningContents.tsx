@@ -1,4 +1,5 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
+import { webArticles } from "../data/webArticles";
 import {
   archiveLearningContent,
   createLearningContent,
@@ -26,7 +27,7 @@ const emptyLearningContentForm: LearningContentFormState = {
   originalUrl: "",
   youtubePlaylistId: "",
   thumbnailUrl: "",
-  body: "",
+  webArticleSlug: "",
   status: "draft",
   sortOrder: 0,
   slug: "",
@@ -59,7 +60,7 @@ function toFormState(content: ManagedLearningContent): LearningContentFormState 
     originalUrl: content.originalUrl,
     youtubePlaylistId: content.youtubePlaylistId,
     thumbnailUrl: content.thumbnailUrl,
-    body: content.body,
+    webArticleSlug: content.webArticleSlug,
     status: content.status,
     sortOrder: content.sortOrder,
     slug: content.slug,
@@ -329,14 +330,20 @@ export function AdminLearningContents() {
             />
           </label>
           <label>
-            內文
-            <textarea
-              rows={5}
-              value={formState.body}
+            網頁文章之網頁
+            <select
+              value={formState.webArticleSlug}
               onChange={(event) =>
-                setFormState({ ...formState, body: event.target.value })
+                setFormState({ ...formState, webArticleSlug: event.target.value })
               }
-            />
+            >
+              <option value="">不連結網頁文章</option>
+              {webArticles.map((article) => (
+                <option value={article.slug} key={article.slug}>
+                  {article.title}
+                </option>
+              ))}
+            </select>
           </label>
           <label>
             Slug
