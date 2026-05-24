@@ -993,12 +993,15 @@ a.calendar-event:focus-visible {
   position: sticky;
   top: 18px;
   display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  max-height: calc(100vh - 36px);
   gap: 12px;
   padding: 16px;
   border: 1px solid rgba(60, 43, 26, 0.12);
   border-radius: 8px;
   background: rgba(255, 253, 250, 0.92);
   box-shadow: 0 14px 34px rgba(83, 45, 13, 0.12);
+  overflow: hidden;
 }
 
 .article-toc p {
@@ -1009,7 +1012,12 @@ a.calendar-event:focus-visible {
 
 .article-toc__list {
   display: grid;
+  min-height: 0;
   gap: 6px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-right: 4px;
+  scrollbar-gutter: stable;
 }
 
 .article-toc__button {
@@ -1751,10 +1759,15 @@ a.calendar-event:focus-visible {
 
   .article-toc {
     position: static;
+    max-height: none;
+    overflow: visible;
   }
 
   .article-toc__list {
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    max-height: none;
+    overflow: visible;
+    padding-right: 0;
   }
 
   .club-section {
