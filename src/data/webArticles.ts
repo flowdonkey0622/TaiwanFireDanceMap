@@ -461,14 +461,14 @@ _圖 30. 右手垂直纏繞（vertical wrap）之條件軌跡示意圖_
 
 如圖表所示，**垂直纏繞**（vertical wrap）在保持相同拍數的同時，其結構與其他纏繞方式不同。poi 在一側的每個軸線上於兩個半拍之間交替：前平面兩步、肩膀上方兩步，以及肩膀下方兩步。
 
-![圖 31. 向外垂直纏繞（vertical wrap）之投影至拍點軸（beat axis）](https://antispinner.gitbook.io/btf/~gitbook/image?url=https%3A%2F%2F3242591672-files.gitbook.io%2F%7E%2Ffiles%2Fv0%2Fb%2Fgitbook-x-prod.appspot.com%2Fo%2Fspaces%252FoDdWGHljmerhnK8y6IQO%252Fuploads%252FyRwrum5liw5hRonCd1nV%252FFig%252031.png%3Falt%3Dmedia%26token%3Dbbb737f0-b866-43a1-9fa5-f81641a0f8a2&width=768&dpr=3&quality=100&sign=32d06a4b&sv=2)
+![圖 31. 向外垂直纏繞（vertical wrap）之投影至拍點軸（beat axis）](https://antispinner.gitbook.io/btf/~gitbook/image?url=https%3A%2F%2F3242591672-files.gitbook.io%2F%7E%2Ffiles%2Fv0%2Fb%2Fgitbook-x-prod.appspot.com%2Fo%2Fspaces%252FoDdWGHljmerhnK8y6IQO%252Fuploads%252FyRwrum5liw5hRonCd1nV%252FFig%252031.png%3Falt%3Dmedia%26token%3Dbbb737f0-b866-43a1-9fa5-f81641a0f8a2&width=768&dpr=3&quality=100&sign=32d06a4b&sv=2)  
 _圖 31. 向外垂直纏繞（vertical wrap）之投影至拍點軸（beat axis）_
 
 **垂直纏繞圖表**（vertical wrap graphs）的核心特徵在於其沿時間軸的不對稱性，這意味著每張圖表僅對應一種特定的 poi 方向。因此，必須針對所有 poi 方向及其組合分別建立獨立的圖表。
 
 讓我們檢視單手 poi（右手）在所有方向上的垂直纏繞圖表，並回到俯視圖（圖 32）。
 
-![圖 32. 右手於所有方向之垂直纏繞（vertical wraps）拍節圖（Beat graphs）](https://antispinner.gitbook.io/btf/~gitbook/image?url=https%3A%2F%2F3242591672-files.gitbook.io%2F%7E%2Ffiles%2Fv0%2Fb%2Fgitbook-x-prod.appspot.com%2Fo%2Fspaces%252FoDdWGHljmerhnK8y6IQO%252Fuploads%252F3B5VoeQnayQCVvRkyeQ8%252FFig%252032.png%3Falt%3Dmedia%26token%3Da632fd0d-8626-426e-97d4-5a1a82bd2ed2&width=768&dpr=3&quality=100&sign=899db35d&sv=2)
+![圖 32. 右手於所有方向之垂直纏繞（vertical wraps）拍節圖（Beat graphs）](https://antispinner.gitbook.io/btf/~gitbook/image?url=https%3A%2F%2F3242591672-files.gitbook.io%2F%7E%2Ffiles%2Fv0%2Fb%2Fgitbook-x-prod.appspot.com%2Fo%2Fspaces%252FoDdWGHljmerhnK8y6IQO%252Fuploads%252F3B5VoeQnayQCVvRkyeQ8%252FFig%252032.png%3Falt%3Dmedia%26token%3Da632fd0d-8626-426e-97d4-5a1a82bd2ed2&width=768&dpr=3&quality=100&sign=899db35d&sv=2)  
 _圖 32. 右手於所有方向之垂直纏繞（vertical wraps）拍節圖（Beat graphs）_
 
 現在，我們將為雙手向外旋轉 poi 的垂直纏繞（vertical wraps）構建圖表（圖 33）。
@@ -545,7 +545,7 @@ _圖 40. 單 poi cosmo 中 poi 運動之投影至拍幅圖（beat graph）_
 
 為了更深入理解此投影在軸線上是如何運作的，讓我們從上方俯瞰 cosmo（圖 41）。
 
-![圖 41. 單 poi cosmo 中 poi 運動投影至拍點圖（beat graph）之示意圖（頂視圖）](https://antispinner.gitbook.io/btf/~gitbook/image?url=https%3A%2F%2F3242591672-files.gitbook.io%2F%7E%2Ffiles%2Fv0%2Fb%2Fgitbook-x-prod.appspot.com%2Fo%2Fspaces%252FoDdWGHljmerhnK8y6IQO%252Fuploads%252FRkKfr7TupzSReeu3O5W0%252FFig%252041.png%3Falt%3Dmedia%26token%3D4a38ac4c-3d49-4897-adc5-e6c06b6f984d&width=768&dpr=3&quality=100&sign=64aa4d89&sv=2)
+![圖 41. 單 poi cosmo 中 poi 運動投影至拍點圖（beat graph）之示意圖（頂視圖）](https://antispinner.gitbook.io/btf/~gitbook/image?url=https%3A%2F%2F3242591672-files.gitbook.io%2F%7E%2Ffiles%2Fv0%2Fb%2Fgitbook-x-prod.appspot.com%2Fo%2Fspaces%252FoDdWGHljmerhnK8y6IQO%252Fuploads%252FRkKfr7TupzSReeu3O5W0%252FFig%252041.png%3Falt%3Dmedia%26token%3D4a38ac4c-3d49-4897-adc5-e6c06b6f984d&width=768&dpr=3&quality=100&sign=64aa4d89&sv=2)  
 _圖 41. 單 poi cosmo 中 poi 運動投影至拍點圖（beat graph）之示意圖（頂視圖）_
 
 您可以立即注意到一種視覺化 poi 繞身體運動的新方式，表現為連接中心軸上各點的曲線。
@@ -580,7 +580,7 @@ _圖 44. 上對角線 Cosmo 時序變體的拍節圖（Beat graphs）_
 ![圖 45. 單 poi 垂直 cosmo 中的 poi 運動示意圖](https://antispinner.gitbook.io/btf/~gitbook/image?url=https%3A%2F%2F3242591672-files.gitbook.io%2F%7E%2Ffiles%2Fv0%2Fb%2Fgitbook-x-prod.appspot.com%2Fo%2Fspaces%252FoDdWGHljmerhnK8y6IQO%252Fuploads%252FkupkpkmvIpoREWa28PMo%252FFig%252045.png%3Falt%3Dmedia%26token%3Dec620d60-80ed-491f-a778-6f170cdd64f6&width=768&dpr=3&quality=100&sign=84675bfd&sv=2)
 _圖 45. 單 poi 垂直 cosmo 中的 poi 運動示意圖_
 
-![圖 46. 單 poi 垂直 cosmo 中的 poi 運動投影圖至拍點圖（beat graph）上](https://antispinner.gitbook.io/btf/~gitbook/image?url=https%3A%2F%2F3242591672-files.gitbook.io%2F%7E%2Ffiles%2Fv0%2Fb%2Fgitbook-x-prod.appspot.com%2Fo%2Fspaces%252FoDdWGHljmerhnK8y6IQO%252Fuploads%252FNZ7R8I2Se6asTxQho3Lg%252FFig%252046.png%3Falt%3Dmedia%26token%3D1f6552ac-bbbd-4f0c-bcb5-fbd5123f8411&width=768&dpr=3&quality=100&sign=34c6f290&sv=2)
+![圖 46. 單 poi 垂直 cosmo 中的 poi 運動投影圖至拍點圖（beat graph）上](https://antispinner.gitbook.io/btf/~gitbook/image?url=https%3A%2F%2F3242591672-files.gitbook.io%2F%7E%2Ffiles%2Fv0%2Fb%2Fgitbook-x-prod.appspot.com%2Fo%2Fspaces%252FoDdWGHljmerhnK8y6IQO%252Fuploads%252FNZ7R8I2Se6asTxQho3Lg%252FFig%252046.png%3Falt%3Dmedia%26token%3D1f6552ac-bbbd-4f0c-bcb5-fbd5123f8411&width=768&dpr=3&quality=100&sign=34c6f290&sv=2)  
 _圖 46. 單 poi 垂直 cosmo 中的 poi 運動投影圖至拍點圖（beat graph）上_
 
 現在，讓我們考量 poi 的方向，檢視各種垂直 cosmo 動作的圖表（圖 47）。
