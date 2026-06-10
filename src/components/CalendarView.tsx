@@ -37,6 +37,12 @@ function toDateKey(date: Date): string {
   return `${year}-${month}-${day}`;
 }
 
+function toMonthKey(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  return `${year}-${month}`;
+}
+
 function getDayLabel(date: Date, inMonth: boolean, monthIndex: number): string {
   if (date.getDate() === 1 || !inMonth) {
     const label = monthNames[date.getMonth()] ?? date.toLocaleString("en", { month: "short" });
@@ -65,19 +71,22 @@ type CalendarViewProps = {
 };
 
 export function CalendarView({ events }: CalendarViewProps) {
-  const [activeMonthIndex, setActiveMonthIndex] = useState(0);
-  const todayKey = toDateKey(new Date());
+  const today = new Date();
+  const todayKey = toDateKey(today);
+  const todayMonthKey = toMonthKey(today);
+  const [activeMonthKey, setActiveMonthKey] = useState(todayMonthKey);
   const months = useMemo(() => {
-    // 月份由活動日期推導，不再額外維護月份清單。
-    const monthKeys = Array.from(
-      new Set(events.map((event) => event.date.slice(0, 7))),
-    ).sort();
+    // 固定保留今日前後兩個月；範圍外若有活動，也納入月份切換清單。
+    const monthKeys = new Set(events.map((event) => event.date.slice(0, 7)));
+    for (let offset = -2; offset <= 2; offset += 1) {
+      monthKeys.add(toMonthKey(new Date(today.getFullYear(), today.getMonth() + offset, 1)));
+    }
 
-    return monthKeys.map((monthKey) => {
+    return Array.from(monthKeys).sort().map((monthKey) => {
       const [year, month] = monthKey.split("-").map(Number);
-      return { year, monthIndex: month - 1 };
+      return { key: monthKey, year, monthIndex: month - 1 };
     });
-  }, [events]);
+  }, [events, today.getFullYear(), today.getMonth()]);
 
   const eventsByDate = useMemo(
     () =>
@@ -88,18 +97,20 @@ export function CalendarView({ events }: CalendarViewProps) {
     [events],
   );
 
-  const activeMonth = months[activeMonthIndex];
-  const safeActiveMonth = activeMonth ?? months[0];
+  const requestedMonthIndex = months.findIndex((month) => month.key === activeMonthKey);
+  const todayMonthIndex = months.findIndex((month) => month.key === todayMonthKey);
+  const activeMonthIndex = requestedMonthIndex >= 0 ? requestedMonthIndex : todayMonthIndex;
+  const safeActiveMonth = months[activeMonthIndex];
   const days = safeActiveMonth
     ? getMonthDays(safeActiveMonth.year, safeActiveMonth.monthIndex)
     : [];
 
   const goToPreviousMonth = () => {
-    setActiveMonthIndex((current) => Math.max(0, current - 1));
+    setActiveMonthKey(months[Math.max(0, activeMonthIndex - 1)].key);
   };
 
   const goToNextMonth = () => {
-    setActiveMonthIndex((current) => Math.min(months.length - 1, current + 1));
+    setActiveMonthKey(months[Math.min(months.length - 1, activeMonthIndex + 1)].key);
   };
 
   return (
@@ -110,11 +121,6 @@ export function CalendarView({ events }: CalendarViewProps) {
         <p>以月曆方式整理火舞社群成發＆活動日期，方便快速掌握密集時段與活動分布。</p>
       </div>
 
-      {months.length === 0 ? (
-        <div className="empty-state">
-          <p>目前沒有已發布的活動資料。</p>
-        </div>
-      ) : (
       <div className="calendar-carousel">
         <div className="calendar-controls" aria-label="切換月份">
           <button
@@ -218,7 +224,6 @@ export function CalendarView({ events }: CalendarViewProps) {
           </div>
         </article>
       </div>
-      )}
     </section>
   );
 }
