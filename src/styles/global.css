@@ -332,6 +332,24 @@ h1 {
   line-height: 1.6;
 }
 
+.county-panel__filter {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 14px;
+  color: #5d402a;
+  font-weight: 800;
+}
+
+.county-panel__filter select {
+  width: 100%;
+  padding: 9px 10px;
+  border: 1px solid rgba(63, 45, 28, 0.18);
+  border-radius: 8px;
+  background: #fffdfa;
+  color: #2d2418;
+  font: inherit;
+}
+
 .event-list {
   display: grid;
   gap: 12px;

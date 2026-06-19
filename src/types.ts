@@ -16,6 +16,8 @@ export type FireDanceEvent = {
 
 export type CalendarEventTone = "blue" | "red" | "orange" | "purple";
 
+export type EventDateFilter = "all" | "active" | "past";
+
 export type FireDanceClub = {
   id: string;
   schoolName: string;

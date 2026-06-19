@@ -3,20 +3,54 @@ import { CountyPopup } from "../components/CountyPopup";
 import { OnlineActivities } from "../components/OnlineActivities";
 import { TaiwanMap } from "../components/TaiwanMap";
 import { usePublishedEvents } from "../hooks/usePublishedEvents";
+import type { EventDateFilter, FireDanceEvent } from "../types";
+
+function getTodayDateKey(): string {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, "0");
+  const day = String(today.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function filterEventsByDate(
+  events: FireDanceEvent[],
+  eventDateFilter: EventDateFilter,
+): FireDanceEvent[] {
+  const todayDateKey = getTodayDateKey();
+
+  return events.filter((event) => {
+    if (eventDateFilter === "active") {
+      return event.date >= todayDateKey;
+    }
+
+    if (eventDateFilter === "past") {
+      return event.date < todayDateKey;
+    }
+
+    return true;
+  });
+}
 
 export function MapPage() {
   const [activeCounty, setActiveCounty] = useState<string | null>(null);
   const [selectedCounty, setSelectedCounty] = useState<string | null>(null);
+  const [eventDateFilter, setEventDateFilter] =
+    useState<EventDateFilter>("active");
   const { events, eventsLoadState, eventsErrorMessage } = usePublishedEvents();
+  const filteredEvents = useMemo(
+    () => filterEventsByDate(events, eventDateFilter),
+    [eventDateFilter, events],
+  );
 
-  // 地圖元件只需要各縣市活動數；縣市彈窗則使用完整活動清單。
+  // 地圖元件只需要各縣市活動數；縣市彈窗則使用完整篩選後活動清單。
   const eventCounts = useMemo(
     () =>
-      events.reduce<Record<string, number>>((counts, event) => {
+      filteredEvents.reduce<Record<string, number>>((counts, event) => {
         counts[event.county] = (counts[event.county] ?? 0) + 1;
         return counts;
       }, {}),
-    [events],
+    [filteredEvents],
   );
 
   const highlightedCounty = activeCounty ?? selectedCounty;
@@ -56,8 +90,10 @@ export function MapPage() {
 
         <CountyPopup
           countyName={selectedCounty}
-          events={events}
+          eventDateFilter={eventDateFilter}
+          events={filteredEvents}
           onClose={() => setSelectedCounty(null)}
+          onEventDateFilterChange={setEventDateFilter}
         />
       </div>
       <OnlineActivities />

@@ -2,15 +2,35 @@ import {
   eventTypeLabels,
   formatEventDate,
 } from "../services/events";
-import type { FireDanceEvent } from "../types";
+import type { EventDateFilter, FireDanceEvent } from "../types";
 
 type CountyPopupProps = {
   countyName: string | null;
+  eventDateFilter: EventDateFilter;
   events: FireDanceEvent[];
   onClose: () => void;
+  onEventDateFilterChange: (eventDateFilter: EventDateFilter) => void;
 };
 
-export function CountyPopup({ countyName, events, onClose }: CountyPopupProps) {
+function eventDateFilterLabel(eventDateFilter: EventDateFilter): string {
+  if (eventDateFilter === "active") {
+    return "尚未結束";
+  }
+
+  if (eventDateFilter === "past") {
+    return "已結束";
+  }
+
+  return "全部";
+}
+
+export function CountyPopup({
+  countyName,
+  eventDateFilter,
+  events,
+  onClose,
+  onEventDateFilterChange,
+}: CountyPopupProps) {
   if (!countyName) {
     return (
       <aside className="county-panel is-empty" aria-live="polite">
@@ -33,6 +53,19 @@ export function CountyPopup({ countyName, events, onClose }: CountyPopupProps) {
       </button>
       <p className="eyebrow">縣市活動</p>
       <h2>{countyName}</h2>
+      <label className="county-panel__filter">
+        時間範圍
+        <select
+          value={eventDateFilter}
+          onChange={(event) =>
+            onEventDateFilterChange(event.target.value as EventDateFilter)
+          }
+        >
+          <option value="all">全部活動</option>
+          <option value="active">尚未結束</option>
+          <option value="past">已結束</option>
+        </select>
+      </label>
       {countyEvents.length > 0 && (
         <p className="event-count">
           目前收錄 {countyEvents.length} 筆火舞相關活動
@@ -58,7 +91,11 @@ export function CountyPopup({ countyName, events, onClose }: CountyPopupProps) {
             </li>
           ))}
         </ul>
-      ) : null}
+      ) : (
+        <p className="empty-state">
+          目前沒有{eventDateFilterLabel(eventDateFilter)}的火舞相關活動。
+        </p>
+      )}
     </aside>
   );
 }
