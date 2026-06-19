@@ -10,7 +10,7 @@
 - 成發日曆由已發布活動日期自動產生月份，不再手動維護固定月份陣列。
 - 教學影片分頁以 YouTube playlist embed 呈現 Poi、流星、短棍等播放清單。
 - 火舞社團分頁從 Supabase 讀取已發布社團，依區域與縣市排序，並提供社團分布地圖。
-- 文章連結與網路活動分享仍由本地 TypeScript 資料檔手動維護。
+- 文章連結仍由本地 TypeScript 資料檔手動維護，網路活動分享會優先讀取後台發布資料。
 - `/admin` 後台支援 Supabase Email/Password 登入，可新增、編輯、封存社團與活動。
 - 使用 `public/flow-donkey-logo-circle.png` 作為網站品牌 Logo 與 favicon。
 - GitHub Pages 部署，Vite base path 設為 `/TaiwanFireDanceMap/`。
@@ -41,7 +41,7 @@
 主要設計取捨：
 
 - 活動與社團已接 Supabase，讓後台修改後可直接反映到公開頁。
-- 教學影片、文章與網路活動目前仍是靜態資料，避免在內容量還小時過度擴張後台。
+- 教學影片與文章目前仍是靜態資料，網路活動已可透過後台發布。
 - 日曆不再維護獨立活動清單，而是使用同一份 published events，避免地圖與日曆資料不一致。
 - 沒有使用前端路由套件；`src/main.tsx` 只負責分流公開站與後台，公開頁路由由 `src/App.tsx` 管理。
 
@@ -273,7 +273,7 @@ public/
 
 ### `online_activities`
 
-後台可新增、更新、封存網路活動。公開頁目前仍讀取 `src/data/onlineActivities.ts` 靜態資料。
+後台可新增、更新、封存網路活動。公開頁會優先讀取 `online_activities` 後台發布資料，未設定 Supabase 或讀取失敗時退回 `src/data/onlineActivities.ts` 靜態資料。
 
 主要欄位：
 
@@ -377,6 +377,6 @@ src/data/taiwan-counties.topo.json
 
 ## 已知維護注意事項
 
-- 教學與網路活動已先接後台更新頁；公開教學與網路活動仍使用 `src/data/*.ts` 靜態資料，尚未切換為 Supabase 讀取。
+- 教學已先接後台更新頁但公開頁仍使用 `src/data/*.ts` 靜態資料；網路活動公開頁已切換為優先讀取 Supabase。
 - `database/seed_static_content.sql` 尚未建立 `clubs` 表；若新建 Supabase 專案，需要另外建立 `clubs` schema，或補齊 migration。
 - `SUPABASE_BACKEND_PLAN.md` 是早期規劃文件，部分內容已被目前實作取代，實際狀態以程式碼與本 README 為準。

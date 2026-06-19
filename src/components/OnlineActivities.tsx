@@ -1,6 +1,41 @@
-import { onlineActivities } from "../data/onlineActivities";
+import { useEffect, useState } from "react";
+import {
+  onlineActivities as staticOnlineActivities,
+  type OnlineActivity,
+} from "../data/onlineActivities";
+import { isSupabaseConfigured } from "../lib/supabase";
+import { getPublishedOnlineActivities } from "../services/onlineActivities";
 
 export function OnlineActivities() {
+  const [onlineActivities, setOnlineActivities] = useState<OnlineActivity[]>(
+    staticOnlineActivities,
+  );
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadOnlineActivities() {
+      if (!isSupabaseConfigured) {
+        return;
+      }
+
+      try {
+        const nextActivities = await getPublishedOnlineActivities();
+        if (isMounted) {
+          setOnlineActivities(nextActivities);
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    loadOnlineActivities();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   return (
     <section className="online-section" aria-labelledby="online-title">
       <div className="online-intro">

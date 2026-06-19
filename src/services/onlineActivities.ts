@@ -1,4 +1,5 @@
 import { supabase } from "../lib/supabase";
+import type { OnlineActivity } from "../data/onlineActivities";
 
 export type OnlineActivityStatus = "draft" | "published" | "archived";
 
@@ -39,6 +40,7 @@ const onlineActivityStatuses: OnlineActivityStatus[] = [
   "published",
   "archived",
 ];
+const onlineActivityAccents: OnlineActivity["accent"][] = ["ember", "sky", "sun"];
 
 function getTrimmedText(value: string, label: string, maxLength: number): string {
   const trimmedValue = value.trim();
@@ -52,6 +54,10 @@ function getTrimmedText(value: string, label: string, maxLength: number): string
 
 function isOnlineActivityStatus(status: unknown): status is OnlineActivityStatus {
   return onlineActivityStatuses.includes(status as OnlineActivityStatus);
+}
+
+function isOnlineActivityAccent(accent: unknown): accent is OnlineActivity["accent"] {
+  return onlineActivityAccents.includes(accent as OnlineActivity["accent"]);
 }
 
 function getSafeExternalUrl(url: string | null): string | null {
@@ -112,6 +118,34 @@ function toManagedOnlineActivity(row: OnlineActivityRow): ManagedOnlineActivity 
   };
 }
 
+function toPublishedOnlineActivity(row: OnlineActivityRow): OnlineActivity | null {
+  const primaryLinkUrl = getSafeExternalUrl(row.primary_link_url);
+  const secondaryLinkUrl = getSafeExternalUrl(row.secondary_link_url);
+
+  if (!primaryLinkUrl) {
+    return null;
+  }
+
+  return {
+    id: row.slug ?? row.id,
+    title: row.title,
+    description: row.description,
+    period: row.period ?? undefined,
+    primaryLink: {
+      label: row.primary_link_label,
+      url: primaryLinkUrl,
+    },
+    secondaryLink:
+      row.secondary_link_label && secondaryLinkUrl
+        ? {
+            label: row.secondary_link_label,
+            url: secondaryLinkUrl,
+          }
+        : undefined,
+    accent: isOnlineActivityAccent(row.accent) ? row.accent : "ember",
+  };
+}
+
 function toOnlineActivityRow(input: OnlineActivityInput) {
   if (!isOnlineActivityStatus(input.status)) {
     throw new Error("網路活動狀態不正確。");
@@ -154,6 +188,29 @@ export async function getManagedOnlineActivities(): Promise<ManagedOnlineActivit
   }
 
   return (data ?? []).map(toManagedOnlineActivity);
+}
+
+export async function getPublishedOnlineActivities(): Promise<OnlineActivity[]> {
+  if (!supabase) {
+    throw new Error("Supabase environment variables are not configured.");
+  }
+
+  const { data, error } = await supabase
+    .from("online_activities")
+    .select(
+      "id, slug, title, description, period, primary_link_label, primary_link_url, secondary_link_label, secondary_link_url, accent, sort_order, status",
+    )
+    .eq("status", "published")
+    .order("sort_order", { ascending: true })
+    .order("title", { ascending: true });
+
+  if (error) {
+    throw error;
+  }
+
+  return (data ?? [])
+    .map(toPublishedOnlineActivity)
+    .filter((activity) => activity !== null);
 }
 
 export async function createOnlineActivity(input: OnlineActivityInput): Promise<void> {
